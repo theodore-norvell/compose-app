@@ -3,7 +3,9 @@ import model.state.CalculatorState
 
 actual fun getPlatformName(): String = "iOS"
 
-fun MainViewController() = ComposeUIViewController {
+fun MainViewController() {
     val calculatorState = CalculatorState()
-    App(calculatorState)
+    ComposeUIViewController {
+        App(calculatorState)
+    }
 }
