@@ -18,7 +18,7 @@ class ImageViewModel( val calculatorState : CalculatorState ) : ViewModel() {
     val uiState : StateFlow<UIState> = _uiState.asStateFlow()
 
     init {
-        // calculatorState.connect { this.updateUIState() }
+        calculatorState.connect { this.updateUIState() }
         updateUIState()
     }
 
@@ -26,12 +26,12 @@ class ImageViewModel( val calculatorState : CalculatorState ) : ViewModel() {
         super.onCleared()
     }
 
-    fun click() {}
+    fun click() { calculatorState.pushSomething() }
 
     private fun updateUIState() {
         println( "Updating UI state")
         viewModelScope.launch{
-            val strings = listOf("abc", "xyz")// calculatorState.stack().map {it.render( calculatorState.env() )}
+            val strings = calculatorState.stack().map {it}
             _uiState.update {
                 it.copy( strings = strings )
             }
