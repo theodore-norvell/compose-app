@@ -33,7 +33,7 @@ class ImageViewModel( val calculatorState : CalculatorState ) : ViewModel() {
         viewModelScope.launch{
             val strings = calculatorState.stack().map {it}
             _uiState.update {
-                it.copy( strings = strings )
+                it.copy( strings = calculatorState.renderStack() )
             }
         }
     }
