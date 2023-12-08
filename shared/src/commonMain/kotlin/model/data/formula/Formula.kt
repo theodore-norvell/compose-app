@@ -11,9 +11,9 @@ interface Formula {
 
     fun freeVars( ) : Set<String>
 
-    //fun asError() : ErrorFormula? = null
+    fun asError() : ErrorFormula? = null
 
-    //fun asFloatNumber() : FloatNumber? = null
+    fun asFloatNumber() : FloatNumber? = null
 
     fun precedence() : Int = 0
 }
