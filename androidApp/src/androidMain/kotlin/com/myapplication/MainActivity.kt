@@ -10,6 +10,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val calculatorState = CalculatorState()
+
         setContent {
             MainView(calculatorState)
         }
