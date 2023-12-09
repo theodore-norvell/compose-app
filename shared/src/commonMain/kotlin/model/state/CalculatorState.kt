@@ -11,11 +11,11 @@ class CalculatorState : Observable() {
     private var count = 42.0
     fun stack() = stack
 
-    fun renderStack() = stack.map{ it.render(env) }
+    fun renderStack() : List<String> = stack.map{ it.render(env) }
 
     //fun env() = env
     fun pushSomething() {
-        stack.add(0, FloatNumber( count ))
+        stack.add(stack.size, FloatNumber( count ))
         count += 1.0
         notifyAllOservers()
     }
