@@ -12,7 +12,8 @@ import model.state.CalculatorState
 data class UIState(
     val strings : List<String> = emptyList(),
     val buttons : List<List<String>> = listOf(
-                        listOf( "enter", "sto", "rcl", "+/-", "<-"),
+                        listOf( "STO", "RCL", "SIN", "COS", "TAN"),
+                        listOf( "ENTER", "+/-", "SWAP", "<-"),
                         listOf( "7", "8", "9", "/"),
                         listOf( "4", "5", "6", "*"),
                         listOf( "1", "2", "3", "-"),
