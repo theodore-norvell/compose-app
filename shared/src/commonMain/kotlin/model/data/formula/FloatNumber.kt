@@ -2,7 +2,7 @@ package model.data.formula
 
 import model.data.Environment
 
-data class FloatNumber( val value : Double ) : Number() {
+data class FloatNumber( val value : Double ) : NumericFormula() { ///
     override fun render(env: Environment): String {
         // Perhaps worry about NaNs and infinities.
         return value.toString()

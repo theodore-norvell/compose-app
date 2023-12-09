@@ -10,10 +10,17 @@ import kotlinx.coroutines.launch
 import model.state.CalculatorState
 
 data class UIState(
-    val strings : List<String> = emptyList()
+    val strings : List<String> = emptyList(),
+    val buttons : List<List<String>> = listOf(
+                        listOf( "enter", "sto", "rcl", "+/-", "<-"),
+                        listOf( "7", "8", "9", "/"),
+                        listOf( "4", "5", "6", "*"),
+                        listOf( "1", "2", "3", "-"),
+                        listOf( "0", ".", "E", "+")
+        )
 )
 
-class ImageViewModel(val calculatorState : CalculatorState ) : ViewModel() {
+class CalculatorViewModel(private val calculatorState : CalculatorState ) : ViewModel() {
     private val _uiState : MutableStateFlow<UIState> = MutableStateFlow(UIState())
     val uiState : StateFlow<UIState> = _uiState.asStateFlow()
 
@@ -26,14 +33,16 @@ class ImageViewModel(val calculatorState : CalculatorState ) : ViewModel() {
         super.onCleared()
     }
 
-    fun click() = calculatorState.pushSomething()
+    fun click(buttonName : String ) { calculatorState.pushSomething() }
 
     private fun updateUIState() {
         println( "Updating UI state")
         viewModelScope.launch{
-            val strings = calculatorState.stack().map {it.render( calculatorState.env() )}
             _uiState.update {
-                it.copy( strings = strings )
+                val strs = calculatorState.renderStack()
+                val strs1 = listOf( "", "", "") + strs
+                val first3 = strs1.subList(strs1.size-3, strs1.size)
+                it.copy( strings = first3 )
             }
         }
     }

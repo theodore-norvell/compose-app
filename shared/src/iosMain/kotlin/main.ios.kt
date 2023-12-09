@@ -1,11 +1,11 @@
 import androidx.compose.ui.window.ComposeUIViewController
 import model.state.CalculatorState
+import platform.UIKit.UIViewController
 
 actual fun getPlatformName(): String = "iOS"
 
-fun MainViewController() {
+fun MainViewController() : UIViewController {
+
     val calculatorState = CalculatorState()
-    ComposeUIViewController {
-        App(calculatorState)
-    }
+    return ComposeUIViewController { App(calculatorState) }
 }
