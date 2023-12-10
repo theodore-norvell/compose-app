@@ -1,6 +1,6 @@
 import androidx.compose.runtime.Composable
-import model.state.CalculatorState
+import model.state.CalculatorModel
 
 actual fun getPlatformName(): String = "Android"
 
-@Composable fun MainView(calculatorState : CalculatorState) = App(calculatorState)
+@Composable fun MainView(calculatorModel : CalculatorModel) = App(calculatorModel)

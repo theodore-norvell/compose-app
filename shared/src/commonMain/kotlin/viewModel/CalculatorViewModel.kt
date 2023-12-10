@@ -6,27 +6,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import model.state.ButtonDescription
+import model.state.CalculatorModel
 
 import model.state.CalculatorState
 
 data class UIState(
-    val strings : List<String> = emptyList(),
-    val buttons : List<List<String>> = listOf(
-                        listOf( "STO", "RCL", "SIN", "COS", "TAN"),
-                        listOf( "ENTER", "+/-", "SWAP", "<-"),
-                        listOf( "7", "8", "9", "/"),
-                        listOf( "4", "5", "6", "*"),
-                        listOf( "1", "2", "3", "-"),
-                        listOf( "0", ".", "E", "+")
-        )
+    val strings : List<String>,
+    val buttons : List<List<ButtonDescription>>
 )
 
-class CalculatorViewModel(private val calculatorState : CalculatorState ) : ViewModel() {
-    private val _uiState : MutableStateFlow<UIState> = MutableStateFlow(UIState())
+class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewModel() {
+    private val _uiState : MutableStateFlow<UIState>
+        = MutableStateFlow(UIState( emptyList(), calculatorModel.buttons()))
     val uiState : StateFlow<UIState> = _uiState.asStateFlow()
 
     init {
-        calculatorState.connect { this.updateUIState() }
+        calculatorModel.connect { this.updateUIState() }
         updateUIState()
     }
 
@@ -34,15 +30,17 @@ class CalculatorViewModel(private val calculatorState : CalculatorState ) : View
         super.onCleared()
     }
 
-    fun click(buttonName : String ) { calculatorState.pushSomething() }
+    fun click(desc : ButtonDescription ) { desc.primaryOperation.clickAction(calculatorModel) }
 
     private fun updateUIState() {
         println( "Updating UI state")
         viewModelScope.launch{
             _uiState.update {
-                val strs = calculatorState.renderStack()
+                // Strings to display
+                val strs = calculatorModel.renderStack()
                 val strs1 = listOf( "", "", "") + strs
                 val first3 = strs1.subList(strs1.size-3, strs1.size)
+                // Does not change buttons
                 it.copy( strings = first3 )
             }
         }

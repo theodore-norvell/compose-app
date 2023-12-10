@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
+import model.state.ButtonDescription
+import model.state.CalculatorModel
 import model.state.CalculatorState
 import viewModel.UIState
 import viewModel.CalculatorViewModel
@@ -47,10 +49,10 @@ fun ImageAppTheme(
 }
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun App(calculatorState : CalculatorState) {
+fun App(calculatorModel : CalculatorModel) {
 
     ImageAppTheme {
-        val viewModel = getViewModel( Unit, viewModelFactory { CalculatorViewModel(calculatorState) } )
+        val viewModel : CalculatorViewModel = getViewModel( Unit, viewModelFactory { CalculatorViewModel(calculatorModel) } )
         mainPage( viewModel )
     }
 }
@@ -92,21 +94,34 @@ private fun mainPage(viewModel : CalculatorViewModel) {
 @Composable
 private fun RowScope.mkButton(
     viewModel: CalculatorViewModel,
-    desc : String
+    desc : ButtonDescription
 ) {
 
-    val w = when(desc){"ENTER" -> 2.0f ; else -> 1.0f}
-    Button(
-          modifier = Modifier.weight(w),
-          colors = ButtonDefaults.buttonColors(
-              backgroundColor = Color.hsl(220.0f, 0.62f, 0.34f) ),
-        onClick = { viewModel.click(desc) }
-    ) {
+    val w = 1.0f // Set to 2 for double wide.  Almost looks right.
+    // TODO deal with shifts
+    val primaryLabelStr = desc.primaryOperation.name
+    val primaryColor = Color.White
+    val secondaryLabelStr = desc.secondaryOperation.name
+    val secondaryColor = Color.Yellow
+    Column() {
         Text(
-            text = desc,
-            color = Color.White,
+            text = secondaryLabelStr,
+            color = secondaryColor,
             modifier = Modifier.background(Color.Transparent)
         )
+        Button(
+            modifier = Modifier.weight(w),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color.hsl(220.0f, 0.62f, 0.34f) ),
+            onClick = { viewModel.click(desc) }
+        ) {
+            Text(
+                text = primaryLabelStr,
+                color = primaryColor,
+                modifier = Modifier.background(Color.Transparent)
+            )
+        }
+
     }
 }
 
