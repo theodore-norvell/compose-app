@@ -1,5 +1,8 @@
 package model.state
 
+import model.data.formula.ErrorFormula
+import model.data.formula.Formula
+
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
@@ -45,7 +48,12 @@ class CalculatorModel : Observable() {
 
     fun buttons() = buttons
 
-    fun todo() {
-
+    private fun push( f : Formula) {
+        state = state.copy( stack = state.stack.plus(f))
+        notifyAllOservers()
     }
+
+    private fun error( message : String  ) = push( ErrorFormula(message))
+
+    fun todo() = error( "TODO")
 }
