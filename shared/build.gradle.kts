@@ -67,6 +67,17 @@ kotlin {
                 implementation("io.ktor:ktor-client-darwin:2.3.6")
             }
         }
+        val unitTests by creating {
+            dependsOn(commonMain)
+            dependencies {
+                // Required -- JUnit 4 framework
+                implementation("junit:junit:4.13")
+                // Optional -- Robolectric environment
+                implementation( "androidx.test:core:1.5.0" )
+            }
+
+
+        }
     }
 }
 
@@ -88,4 +99,7 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+}
+dependencies {
+    testImplementation("junit:junit:4.12")
 }
