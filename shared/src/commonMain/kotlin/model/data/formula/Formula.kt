@@ -13,7 +13,11 @@ interface Formula {
 
     fun asError() : ErrorFormula? = null
 
-    fun asFloatNumber() : FloatNumber? = null
+    fun asFloatNumber() : NumberFormula? = null
 
     fun precedence() : Int = 0
+    fun isClosed(): Boolean = false
+    fun canAppendDigit(base : Int, digit: Byte) = false
+    fun appendDigit(base: Int, digit: Byte) = this
+    fun close(): Formula = this
 }

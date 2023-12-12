@@ -2,7 +2,7 @@ package model.data
 
 import model.data.formula.BinaryOperation
 import model.data.formula.ErrorFormula
-import model.data.formula.FloatNumber
+import model.data.formula.NumberFormula
 import model.data.formula.Formula
 
 fun applyBinaryOperator(op : BinaryOperator, left : Formula, right : Formula) : Formula {
@@ -29,19 +29,16 @@ fun applyBinaryOperator(op : BinaryOperator, left : Formula, right : Formula) : 
                             // Apply the operator.
                             when (op) {
                                 BinaryOperator.ADD ->
-                                    return FloatNumber(l.value + r.value)
+                                    return TODO()
 
                                 BinaryOperator.DIVIDE ->
-                                    return when( r.value ) {
-                                        0.0 -> ErrorFormula( "Divide by Zero")
-                                        else -> FloatNumber(l.value / r.value)
-                                    }
+                                    return TODO()
 
                                 BinaryOperator.MULTIPLY ->
-                                    return FloatNumber(l.value * r.value)
+                                    return TODO()
 
                                 BinaryOperator.SUBTRACT ->
-                                    return FloatNumber(l.value - r.value)
+                                    return TODO()
 
                             }
                         }

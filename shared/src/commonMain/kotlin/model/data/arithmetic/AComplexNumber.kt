@@ -1,18 +1,51 @@
 package model.data.arithmetic
 
-data class AComplexNumber (val realPart : ANumber, val imaginaryPart : ANumber )
+data class AComplexNumber (
+    val realPart : ANumber,
+    val imaginaryPart : ANumber )
+{
+    fun render(): String {
+        // TODO, accommodate display preferences
+        val groupLengthBefore : Int = 3
+        val groupLengthAfter : Int = 3
+        val separatorBefore : Char = ','
+        val separatorAfter : Char = ' '
+        val radixPoint : Char = '.'
+        val rootMinus1 = "i"
+        if( imaginaryPart.isZero() ) {
+            return realPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint)
+        } else if( realPart.isZero()) {
+            return imaginaryPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint) + " " + rootMinus1
+        } else {
+            return "($realPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint)) + " +
+                    "$imaginaryPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint)) $rootMinus1)"
+        }
+    }
+
+    fun isClosed() : Boolean = realPart.isClosed()
+
+    fun canAppendDigit(base : Int, digit: Byte): Boolean = realPart.canAppendDigit( base, digit )
+    fun appendDigit(base: Int, digit: Byte): AComplexNumber = copy( realPart = realPart.appendDigit(base, digit) )
+    fun close(): AComplexNumber = copy( realPart = realPart.close(), imaginaryPart = imaginaryPart.close())
+
+    companion object {
+        fun openZero(base : Int): AComplexNumber = AComplexNumber( FlexNumber.openZero(base), FlexNumber.closedZero(base))
+    }
+}
+
+enum class NumberEntryState { CLOSED, BEFORE_POINT, AFTER_POINT, EXPONENT }
 
 abstract class ANumber protected constructor(
+                        val numberEntryState : NumberEntryState,
                         val isNegative : Boolean,
                        val base : Int,
                        val length : Int,
-                       val isPointed : Boolean,
                        val precision : Int,
                        val digits : List<Byte>) {
     init{
         check( base > 1)
         check( base < 36 )
-        check( precision == 0 || isPointed)
+        check( numberEntryState != NumberEntryState.BEFORE_POINT || precision == 0)
         check( digits.isEmpty() || digits[digits.size-1].toInt() != 0)
         check( digits.isEmpty() || ! digits.all{ it.toInt() == 0 } )
         check( digits.isNotEmpty() || !isNegative )
@@ -27,6 +60,8 @@ abstract class ANumber protected constructor(
         val i = k + precision
         return if( i >= digits.size) 0 else if( i < 0 ) 0 else digits[i]
     }
+
+    fun isZero() : Boolean = digits.isEmpty()
 
     fun render() = render(3, 3,',', ' ', '.')
     private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: Char) {
@@ -63,7 +98,7 @@ abstract class ANumber protected constructor(
             separate( b.toString(), finalBuilder, groupLengthBefore, separatorBefore)
         }
         // Radix point
-        if( isPointed ) {
+        if( numberEntryState != NumberEntryState.BEFORE_POINT ) {
             finalBuilder.append( radixPoint )
             run {
                 val a = StringBuilder()
@@ -74,100 +109,140 @@ abstract class ANumber protected constructor(
         return finalBuilder.toString()
     }
 
-    override fun hashCode(): Int {
-        val a = if(isNegative) 13 else 11
-        val b = base
-        val c = length
-        val d = if(isNegative) 17 else 19
-        val e = precision
-        val f = digits.hashCode()
-        return a + 257*(b + 257*(c + 257*(d + 257*(e + 257*f))))
-    }
-}
-
-class FlexNumber
-    private constructor (
-                isNegative : Boolean,
-                 base : Int,
-                 length : Int,
-                 isPointed : Boolean,
-                 precision : Int,
-                 digitsInput : List<Byte>)
-    : ANumber( isNegative, base, length, isPointed, precision, digitsInput ) {
-
-    companion object {
-        // Factory used so that Flex numbers are guaranteed normalized.
-        fun create( isNegative : Boolean,
-                         base : Int,
-                         length : Int,
-                         isPointed : Boolean,
-                         precision : Int,
-                         digits : List<Byte>) : FlexNumber  {
-            check( base > 1)
-            check( base < 36 )
-            check( precision == 0 || isPointed)
-            val lastNonZero = 1 + (digits.findLast { it.toInt() != 0 } ?: -1)
-            val newDigits = if( lastNonZero == digits.size ) digits else digits.take( lastNonZero )
-            val newIsNegative = if(newDigits.isEmpty()) false else isNegative
-            return FlexNumber( newIsNegative,
-                                base,
-                                length,
-                                isPointed,
-                                precision,
-                                newDigits )
-        }
-    }
-
-    fun canAppend(base: Int, digit: Byte): Boolean {
-        return base == this.base && 0 <= digit && digit < base
-    }
-
-    fun append(base: Int, digit: Byte): FlexNumber {
-        // Note that appending a digit to the number means prepending the digit
-        // to our digit list.
-        check(canAppend(base, digit)) { "FlexNumber: bad append" }
-        val newDigits = listOf(digit) + digits
-        val newPrecision = if (isPointed) precision + 1 else precision
-        return FlexNumber(isNegative, base, length + 1, isPointed, newPrecision, newDigits)
-    }
-
-    fun addPoint(): FlexNumber {
-        return copy( precision = 0, isPointed = true )
-    }
-
-    fun negate() : FlexNumber {
-        return copy( isNegative = !isNegative )
-    }
-
-    private fun copy(isNegative : Boolean = this.isNegative,
-                     base : Int = this.base,
-                     length : Int = this.length,
-                     isPointed : Boolean = this.isPointed,
-                     precision : Int = this.precision,
-                     digitsInput : List<Byte> = this. digits
-    ) = FlexNumber.create(isNegative,
-            base,
-            length,
-            isPointed,
-            precision,
-            digitsInput)
-
     override fun equals(other: Any?): Boolean {
         // This is not numerical equality, as it includes
         // precision, length, and pointedNess
         if (this === other) return true
         if (other == null || this::class != other::class) return false
         if (other is FlexNumber) {
-            return other.isNegative == isNegative
+            return  other.numberEntryState == numberEntryState
+                    && other.isNegative == isNegative
                     && other.base == base
                     && other.length == length
-                    && other.isPointed == isPointed
                     && other.precision == precision
                     && other.digits == digits
         } else {
             return false
         }
     }
+    override fun hashCode(): Int {
+        val a = if(isNegative) 13 else 11
+        val b = base
+        val c = length
+        val d = when( numberEntryState ) {
+            NumberEntryState.CLOSED -> 23
+            NumberEntryState.BEFORE_POINT -> 29
+            NumberEntryState.AFTER_POINT -> 31
+            NumberEntryState.EXPONENT -> 33
+        }
+        val e = precision
+        val f = digits.hashCode()
+        return a + 257*(b + 257*(c + 257*(d + 257*(e + 257*f))))
+    }
+
+
+
+    abstract fun canAppendDigit(base: Int, digit: Byte): Boolean
+
+    abstract fun appendDigit(base: Int, digit: Byte): FlexNumber
+
+    abstract fun appendPoint(): FlexNumber
+
+    abstract fun negate() : FlexNumber
+    abstract fun isClosed(): Boolean
+    abstract fun close(): ANumber
+}
+
+class FlexNumber
+    private constructor (
+                numberEntryState : NumberEntryState,
+                isNegative : Boolean,
+                base : Int,
+                length : Int,
+                precision : Int,
+                digitsInput : List<Byte>)
+    : ANumber( numberEntryState, isNegative, base, length, precision, digitsInput )
+{
+    companion object {
+        // Factory used so that Flex numbers are guaranteed normalized.
+        fun create( numberEntryState : NumberEntryState,
+                    isNegative : Boolean,
+                    base : Int,
+                    length : Int,
+                    precision : Int,
+                    digits : List<Byte>) : FlexNumber  {
+            check( base > 1)
+            check( base < 36 )
+            check( numberEntryState != NumberEntryState.BEFORE_POINT || precision == 0)
+            val lastNonZero = 1 + (digits.findLast { it.toInt() != 0 } ?: -1)
+            val newDigits = if( lastNonZero == digits.size ) digits else digits.take( lastNonZero )
+            val newIsNegative = if(newDigits.isEmpty()) false else isNegative
+            return FlexNumber(  numberEntryState,
+                                newIsNegative,
+                                base,
+                                length,
+                                precision,
+                                newDigits )
+        }
+
+        fun openZero(base: Int): ANumber = create( NumberEntryState.BEFORE_POINT, false, base, 0,0, emptyList())
+
+        fun closedZero(base: Int): ANumber = create( NumberEntryState.CLOSED, false, base, 0,0, emptyList())
+    }
+
+    override fun canAppendDigit(base: Int, digit: Byte): Boolean {
+        return when( numberEntryState ) {
+            NumberEntryState.BEFORE_POINT, NumberEntryState.AFTER_POINT, NumberEntryState.EXPONENT  ->
+                base == this.base && 0 <= digit && digit < base
+            NumberEntryState.CLOSED -> false
+        }
+    }
+
+    override fun appendDigit(base: Int, digit: Byte): FlexNumber {
+        // Note that appending a digit to the number means prepending the digit
+        // to our digit list.
+        check(canAppendDigit(base, digit)) { "FlexNumber: bad append" }
+        val newDigits = listOf(digit) + digits
+        return when( numberEntryState ) {
+            NumberEntryState.CLOSED -> this
+            NumberEntryState.BEFORE_POINT -> copy(length = length + 1, digits = newDigits)
+            NumberEntryState.AFTER_POINT -> copy(length = length + 1,  precision =  precision+1, digits = newDigits)
+            NumberEntryState.EXPONENT -> TODO()
+        }
+    }
+
+    override fun appendPoint(): FlexNumber {
+        return when( numberEntryState ) {
+            NumberEntryState.CLOSED -> this
+            NumberEntryState.BEFORE_POINT -> copy( numberEntryState = NumberEntryState.AFTER_POINT )
+            NumberEntryState.AFTER_POINT -> this
+            NumberEntryState.EXPONENT -> TODO()
+        }
+    }
+
+    override fun negate() : FlexNumber {
+        return copy( isNegative = !isNegative )
+    }
+
+    override fun isClosed(): Boolean =
+        numberEntryState == NumberEntryState.CLOSED
+
+    override fun close(): ANumber =
+        copy( numberEntryState = NumberEntryState.CLOSED )
+
+    private fun copy( numberEntryState : NumberEntryState = this.numberEntryState,
+                      isNegative: Boolean = this.isNegative,
+                     base : Int = this.base,
+                     length : Int = this.length,
+                     precision : Int = this.precision,
+                     digits : List<Byte> = this. digits
+    ) = FlexNumber.create(
+            numberEntryState,
+            isNegative,
+            base,
+            length,
+            precision,
+            digits)
 
 
 

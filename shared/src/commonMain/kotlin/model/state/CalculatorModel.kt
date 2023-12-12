@@ -40,20 +40,38 @@ class CalculatorModel : Observable() {
         )
     }
 
+    fun top() = state.top
     fun stack() = state.stack
 
-    fun renderStack() : List<String> = stack().map{ it.render(env()) }
+    fun renderStack() : List<String> =  stack().map{ it.render(env()) } + top().render(env())
 
     fun env() = state.env
 
+    fun mode() = state.mode
+
     fun buttons() = buttons
 
-    private fun push( f : Formula) {
-        state = state.copy( stack = state.stack.plus(f))
+    private fun updateState( newState : CalculatorState ) {
+        state = newState
+        // Here the buttons should be updated based on the new state.
         notifyAllOservers()
     }
 
-    private fun error( message : String  ) = push( ErrorFormula(message))
+    private fun error( message : String  )
+        = updateState( state.push( ErrorFormula(message) ) )
 
     fun todo() = error( "TODO")
+
+    fun addDigit( digit : Byte ) {
+        // TODO take care of exponents
+        val state0 = state.ensureEntering() ;
+        val state1 = state0.appendDigit(digit) ;
+        updateState( state1 )
+    }
+
+    fun enter() {
+        val state0 = state.ensureReady()
+        val state1 = state0.push(state0.top)
+        updateState( state1)
+    }
 }

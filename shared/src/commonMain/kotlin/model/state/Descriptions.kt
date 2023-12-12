@@ -47,7 +47,7 @@ class Descriptions {
         )
         val ENTER = ButtonDescription(
             ButtonOperation("ENTER") {
-                it.todo()
+                it.enter()
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -125,9 +125,9 @@ class Descriptions {
                 it.todo()
             }
         )
-        val DIGIT = {d : Int ->ButtonDescription(
+        val DIGIT = {d : Byte ->ButtonDescription(
             ButtonOperation(d.toString()) {
-                it.todo()
+                it.addDigit(d)
             },
             ButtonOperation( "TBD") {
                 it.todo()
