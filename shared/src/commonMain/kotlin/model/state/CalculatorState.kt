@@ -20,8 +20,25 @@ data class CalculatorState(
     val env : Environment = Environment(),
     val mode : CalculatorModes = CalculatorModes()
 ) {
+    private fun close(): CalculatorState =
+        copy( top = top.close() )
+
+    private fun ensureAfterEnter() =
+        copy( mode = mode.copy(entryState = EntryState.AFTER_ENTER) )
+
+    private fun ensureOpen() =
+        if( top.isClosed() ) {
+            val state0 = if( mode.entryState == EntryState.AFTER_ENTER ) this else push( top )
+            val state1 = state0.ensureReady()
+            state1.copy( top = NumberFormula(AComplexNumber.openZero( mode.base )) )
+        }
+        else this
+
+    private fun ensureReady() : CalculatorState =
+        close().run { copy( mode = mode.copy( entryState = EntryState.NORMAL)) }
+
     fun appendDigit(digit : Byte) : CalculatorState =
-        ensureOpen(). run {
+        ensureOpen().run {
             if( top.isClosed() ) {
                 this
             } else if( top.canAppendDigit( mode.base, digit ) ) {
@@ -32,23 +49,10 @@ data class CalculatorState(
     }
 
     fun appendPoint() : CalculatorState =
-        ensureOpen(). run {
+        ensureOpen().run {
             if( top.isClosed() ) this else copy( top = top.appendPoint( ) )
         }
 
-    private fun ensureAfterEnter() = copy( mode = mode.copy(entryState = EntryState.AFTER_ENTER) )
-    private fun ensureOpen() =
-        if( top.isClosed() ) {
-            val state0 = if( mode.entryState == EntryState.AFTER_ENTER ) this else push( top )
-            val state1 = state0.ensureReady()
-            state1.copy( top = NumberFormula(AComplexNumber.openZero( mode.base )) )
-        }
-        else this
-
-    private fun ensureReady() : CalculatorState {
-        val state0 = if( top.isClosed() ) this else copy( top = top.close()  )
-        return state0.copy( mode = state0.mode.copy( entryState = EntryState.NORMAL))
-    }
 
     fun enter() = close().run{ push(top )}.run{ ensureAfterEnter() }
 
@@ -59,5 +63,4 @@ data class CalculatorState(
             if( stack.isEmpty() ) this
             else copy( top = stack.last(), stack = stack.subList(0,stack.size-1) + top ) }
 
-    fun close(): CalculatorState = copy( top = top.close() )
 }
