@@ -1,15 +1,19 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import model.state.ButtonDescription
@@ -65,10 +70,14 @@ private fun mainPage(viewModel : CalculatorViewModel) {
             verticalArrangement = Arrangement.Center,
         ) {
 
+        val displayScrollState = rememberScrollState( )
 
         Column(
             verticalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+            modifier = Modifier.fillMaxWidth()
+                                .fillMaxHeight(0.25f)
+                                .padding(horizontal = 5.dp)
+                                .scrollable(displayScrollState, orientation = Orientation.Vertical),
             content = {
                 uiState.strings.forEach{ str -> stackItemView(str) }
             }
@@ -131,7 +140,7 @@ fun stackItemView(str: String) {
         modifier = Modifier.fillMaxWidth().background(Color.hsl(146.0f, 0.11f, 0.65f)),
         text = str,
         color = Color.Black,
-        fontSize = 5.0 .em,
+        fontSize = 20.sp,
         fontFamily = FontFamily.Monospace,
     )
 }

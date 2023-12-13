@@ -9,8 +9,6 @@ import kotlinx.coroutines.launch
 import model.state.ButtonDescription
 import model.state.CalculatorModel
 
-import model.state.CalculatorState
-
 data class UIState(
     val strings : List<String>,
     val buttons : List<List<ButtonDescription>>
@@ -37,11 +35,9 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
         viewModelScope.launch{
             _uiState.update {
                 // Strings to display
-                val strs = calculatorModel.renderStack()
-                val strs1 = listOf( "", "", "") + strs
-                val first3 = strs1.subList(strs1.size-3, strs1.size)
+                val strings = calculatorModel.renderStack()
                 // Does not change buttons
-                it.copy( strings = first3 )
+                it.copy( strings = strings )
             }
         }
     }
