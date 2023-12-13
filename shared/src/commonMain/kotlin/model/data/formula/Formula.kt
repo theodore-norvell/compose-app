@@ -20,4 +20,5 @@ interface Formula {
     fun canAppendDigit(base : Int, digit: Byte) = false
     fun appendDigit(base: Int, digit: Byte) = this
     fun close(): Formula = this
+    fun appendPoint(): Formula = this
 }

@@ -29,5 +29,7 @@ data class NumberFormula(val value : AComplexNumber) : NumericFormula() { ///
 
     override fun appendDigit(base: Int, digit: Byte) = NumberFormula( value.appendDigit( base, digit ) )
 
+    override fun appendPoint() = NumberFormula( value.appendPoint( ) )
+
     override fun close() = NumberFormula( value.close() )
 }

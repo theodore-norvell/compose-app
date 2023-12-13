@@ -23,11 +23,10 @@ data class AComplexNumber (
     }
 
     fun isClosed() : Boolean = realPart.isClosed()
-
     fun canAppendDigit(base : Int, digit: Byte): Boolean = realPart.canAppendDigit( base, digit )
     fun appendDigit(base: Int, digit: Byte): AComplexNumber = copy( realPart = realPart.appendDigit(base, digit) )
     fun close(): AComplexNumber = copy( realPart = realPart.close(), imaginaryPart = imaginaryPart.close())
-
+    fun appendPoint(): AComplexNumber = copy( realPart = realPart.appendPoint() )
     companion object {
         fun openZero(base : Int): AComplexNumber = AComplexNumber( FlexNumber.openZero(base), FlexNumber.closedZero(base))
     }
@@ -64,18 +63,27 @@ abstract class ANumber protected constructor(
     fun isZero() : Boolean = digits.isEmpty()
 
     fun render() = render(3, 3,',', ' ', '.')
-    private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: Char) {
+    private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: Char, excessAtStart : Boolean) {
         val wholeGroups = str.length / groupLength
-        var i = str.length - groupLength*wholeGroups
+        val rem = str.length - groupLength*wholeGroups
+        var i = 0
 
-        (0..< i).forEach{ finalBuilder.append( str[it]) }
-        var atStart = i==0
+        if(excessAtStart)
+                (0..< rem).forEach{
+                    finalBuilder.append( str[it]) ; ++i }
+        var skipNextSeparator = i==0
         (0 ..< wholeGroups ).forEach {
-            if( ! atStart ) {finalBuilder.append(separator); atStart = false }
+            if( ! skipNextSeparator ) {finalBuilder.append(separator) }
+            skipNextSeparator = false
             (i ..< (i+groupLength)).forEach { finalBuilder.append(str[it]) }
             i += groupLength
         }
-        check( i == str.length )
+        if( i < str.length ) {
+            // There are left overs
+            check( !excessAtStart )
+            if( i > 0) finalBuilder.append(separator)
+            (i..< str.length).forEach{
+                finalBuilder.append( str[it]) ; ++i } }
     }
 
     fun render(groupLengthBefore : Int, groupLengthAfter : Int, separatorBefore : Char, separatorAfter : Char, radixPoint : Char  ) : String {
@@ -87,23 +95,22 @@ abstract class ANumber protected constructor(
         // Digits before the dot
         run {
             val b = StringBuilder()
-            if( digits.size > precision) {
-                digits.drop(precision).forEach { b.append(toChar(it)) }
-            } else if(digits.size == precision ) {
+            if( length > precision) {
+                var k = length-precision-1
+                (precision..<length).forEach { b.append( getDigit(k) ) ; --k }
+            } else {
                 b.append('0')
-            } else { // digits.size < precision
-                (1..precision - digits.size).forEach { b.append('0') }
             }
             // Transfer to the final builder in groups
-            separate( b.toString(), finalBuilder, groupLengthBefore, separatorBefore)
+            separate( b.toString(), finalBuilder, groupLengthBefore, separatorBefore, true)
         }
         // Radix point
         if( numberEntryState != NumberEntryState.BEFORE_POINT ) {
             finalBuilder.append( radixPoint )
             run {
                 val a = StringBuilder()
-                (0 ..< precision).forEach { a.append( if( it> digits.size) '0' else toChar(digits[it]) ) }
-                separate( a.toString(), finalBuilder, groupLengthAfter, separatorAfter)
+                (1 .. precision).forEach { a.append( getDigit(-it) ) }
+                separate( a.toString(), finalBuilder, groupLengthAfter, separatorAfter, false)
             }
         }
         return finalBuilder.toString()
@@ -174,7 +181,7 @@ class FlexNumber
             check( base > 1)
             check( base < 36 )
             check( numberEntryState != NumberEntryState.BEFORE_POINT || precision == 0)
-            val lastNonZero = 1 + (digits.findLast { it.toInt() != 0 } ?: -1)
+            val lastNonZero = 1 + (digits.indexOfLast { it.toInt() != 0 } ?: -1)
             val newDigits = if( lastNonZero == digits.size ) digits else digits.take( lastNonZero )
             val newIsNegative = if(newDigits.isEmpty()) false else isNegative
             return FlexNumber(  numberEntryState,
@@ -201,14 +208,20 @@ class FlexNumber
     override fun appendDigit(base: Int, digit: Byte): FlexNumber {
         // Note that appending a digit to the number means prepending the digit
         // to our digit list.
-        check(canAppendDigit(base, digit)) { "FlexNumber: bad append" }
-        val newDigits = listOf(digit) + digits
-        return when( numberEntryState ) {
-            NumberEntryState.CLOSED -> this
-            NumberEntryState.BEFORE_POINT -> copy(length = length + 1, digits = newDigits)
-            NumberEntryState.AFTER_POINT -> copy(length = length + 1,  precision =  precision+1, digits = newDigits)
-            NumberEntryState.EXPONENT -> TODO()
-        }
+        if(canAppendDigit(base, digit)) {
+            val newDigits = listOf(digit) + digits
+            return when (numberEntryState) {
+                NumberEntryState.CLOSED -> this
+                NumberEntryState.BEFORE_POINT -> copy(length = length + 1, digits = newDigits)
+                NumberEntryState.AFTER_POINT -> copy(
+                    length = length + 1,
+                    precision = precision + 1,
+                    digits = newDigits
+                )
+
+                NumberEntryState.EXPONENT -> TODO()
+            }
+        } else return this
     }
 
     override fun appendPoint(): FlexNumber {

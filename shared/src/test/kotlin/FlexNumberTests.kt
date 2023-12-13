@@ -2,6 +2,7 @@ import model.data.arithmetic.FlexNumber
 import model.data.arithmetic.NumberEntryState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -39,5 +40,59 @@ class FlexNumberTests {
 
         assertEquals(onePointTwo, twin)
         assertEquals(onePointTwo.hashCode(), twin.hashCode() )
+
+        println( "Test makeFlexNumber done")
+    }
+
+    @Test fun makeLongerFlexNumber() {
+        val zero = FlexNumber.openZero(10)
+        assertEquals( "0", zero.render() )
+        assertEquals( "0", zero.negate().render() )
+        assertEquals( zero, zero.negate() )
+
+        val zeroZero = zero.appendDigit(10, 0)
+        assertEquals( "0", zeroZero.render() )
+        assertEquals( "0", zeroZero.negate().render() )
+        assertNotEquals(zero, zeroZero)
+
+        val one2 = zeroZero
+            .appendDigit(10,1)
+            .appendDigit(10,2)
+        assertEquals( "012", one2.render() )
+        assertEquals( "-012", one2.negate().render() )
+
+        val one23 = one2
+            .appendDigit(10,3)
+        assertEquals( "0,123", one23.render() )
+        assertEquals( "-0,123", one23.negate().render() )
+
+        val one2345678 = one23
+            .appendDigit(10,4)
+            .appendDigit(10,5)
+            .appendDigit(10,6)
+            .appendDigit(10,7)
+            .appendDigit(10,8)
+        assertEquals( "012,345,678", one2345678.render() )
+        assertEquals( "-012,345,678", one2345678.negate().render() )
+
+        val one2345678Point86 = one2345678
+            .appendPoint()
+            .appendDigit(10,8)
+            .appendDigit(10,6)
+        assertEquals( "012,345,678.86", one2345678Point86.render() )
+        assertEquals( "-012,345,678.86", one2345678Point86.negate().render() )
+
+        val one2345678Point8642 = one2345678Point86
+            .appendDigit(10,4)
+            .appendDigit(10,2)
+        assertEquals( "012,345,678.864 2", one2345678Point8642.render() )
+        assertEquals( "-012,345,678.864 2", one2345678Point8642.negate().render() )
+
+        val one2345678Point864205 = one2345678Point8642
+            .appendDigit(10,0)
+            .appendDigit(10,5)
+        assertEquals( "012,345,678.864 205", one2345678Point864205.render() )
+        assertEquals( "-012,345,678.864 205", one2345678Point864205.negate().render() )
+        println( "Test makeLongerFlexNumber done")
     }
 }

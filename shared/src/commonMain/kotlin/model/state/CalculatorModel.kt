@@ -1,7 +1,6 @@
 package model.state
 
 import model.data.formula.ErrorFormula
-import model.data.formula.Formula
 
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
@@ -62,16 +61,11 @@ class CalculatorModel : Observable() {
 
     fun todo() = error( "TODO")
 
-    fun addDigit( digit : Byte ) {
-        // TODO take care of exponents
-        val state0 = state.ensureEntering() ;
-        val state1 = state0.appendDigit(digit) ;
-        updateState( state1 )
-    }
+    fun appendDigit(digit : Byte ) = updateState( state.appendDigit( digit ) )
 
-    fun enter() {
-        val state0 = state.ensureReady()
-        val state1 = state0.push(state0.top)
-        updateState( state1)
-    }
+    fun enter() = updateState( state.enter() )
+
+    fun appendPoint() =  updateState( state.appendPoint() )
+
+    fun swap() = updateState( state.swap() )
 }

@@ -63,7 +63,7 @@ class Descriptions {
         )
         val SWAP = ButtonDescription(
             ButtonOperation("SWAP") {
-                it.todo()
+                it.swap()
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -111,7 +111,7 @@ class Descriptions {
         )
         val POINT = ButtonDescription(
             ButtonOperation(".") {
-                it.todo()
+                it.appendPoint()
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -127,7 +127,7 @@ class Descriptions {
         )
         val DIGIT = {d : Byte ->ButtonDescription(
             ButtonOperation(d.toString()) {
-                it.addDigit(d)
+                it.appendDigit(d)
             },
             ButtonOperation( "TBD") {
                 it.todo()
