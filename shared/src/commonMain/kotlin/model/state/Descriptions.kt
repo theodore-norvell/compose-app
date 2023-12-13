@@ -55,7 +55,7 @@ class Descriptions {
         )
         val NEGATE = ButtonDescription(
             ButtonOperation("+/-") {
-                it.todo()
+                it.negate()
             },
             ButtonOperation( "TBD") {
                 it.todo()

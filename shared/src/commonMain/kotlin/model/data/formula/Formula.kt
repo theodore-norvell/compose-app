@@ -1,6 +1,7 @@
 package model.data.formula
 
 import model.data.Environment
+import model.data.UnaryOperator
 
 interface Formula {
     fun render( env : Environment) : String
@@ -21,4 +22,5 @@ interface Formula {
     fun appendDigit(base: Int, digit: Byte) = this
     fun close(): Formula = this
     fun appendPoint(): Formula = this
+    fun negate(): Formula = UnaryOperation( op = UnaryOperator.NEGATE, this )
 }

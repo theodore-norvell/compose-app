@@ -32,4 +32,6 @@ data class NumberFormula(val value : AComplexNumber) : NumericFormula() { ///
     override fun appendPoint() = NumberFormula( value.appendPoint( ) )
 
     override fun close() = NumberFormula( value.close() )
+
+    override fun negate(): Formula = NumberFormula( value.negate() )
 }

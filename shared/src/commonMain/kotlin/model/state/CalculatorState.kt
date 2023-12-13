@@ -63,4 +63,6 @@ data class CalculatorState(
             if( stack.isEmpty() ) this
             else copy( top = stack.last(), stack = stack.subList(0,stack.size-1) + top ) }
 
+    fun negate(): CalculatorState = copy( top = top.negate() )
+
 }

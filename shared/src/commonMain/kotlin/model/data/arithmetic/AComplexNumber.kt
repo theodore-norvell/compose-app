@@ -27,6 +27,8 @@ data class AComplexNumber (
     fun appendDigit(base: Int, digit: Byte): AComplexNumber = copy( realPart = realPart.appendDigit(base, digit) )
     fun close(): AComplexNumber = copy( realPart = realPart.close(), imaginaryPart = imaginaryPart.close())
     fun appendPoint(): AComplexNumber = copy( realPart = realPart.appendPoint() )
+    fun negate(): AComplexNumber = copy( realPart = realPart.negate(), imaginaryPart = imaginaryPart.negate())
+
     companion object {
         fun openZero(base : Int): AComplexNumber = AComplexNumber( FlexNumber.openZero(base), FlexNumber.closedZero(base))
     }

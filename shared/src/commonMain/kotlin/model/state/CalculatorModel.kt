@@ -66,6 +66,7 @@ class CalculatorModel : Observable() {
     fun enter() = updateState( state.enter() )
 
     fun appendPoint() =  updateState( state.appendPoint() )
+    fun negate() = updateState( state.negate() )
 
     fun swap() = updateState( state.swap() )
 }

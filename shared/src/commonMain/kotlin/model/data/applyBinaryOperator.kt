@@ -15,7 +15,7 @@ fun applyBinaryOperator(op : BinaryOperator, left : Formula, right : Formula) : 
                 null -> return right
                 // No errors
                 else -> {
-                    // If both operands can be converted to floating point, do so
+                    // If both operands can beå  converted to floating point, do so
                     val (r, l) = Pair(left.asFloatNumber(), right.asFloatNumber())
                     when {
                         r == null || l == null -> {
