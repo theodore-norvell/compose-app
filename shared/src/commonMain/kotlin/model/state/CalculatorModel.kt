@@ -42,7 +42,8 @@ class CalculatorModel : Observable() {
     fun top() = state.top
     fun stack() = state.stack
 
-    fun renderStack() : List<String> =  stack().map{ it.render(env()) } + top().render(env())
+    fun renderTop() : String = state.top.render(env())
+    fun renderStack() : List<String> =  stack().map{ it.render(env()) }
 
     fun env() = state.env
 

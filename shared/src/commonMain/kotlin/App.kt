@@ -1,38 +1,38 @@
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Button
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import model.state.ButtonDescription
 import model.state.CalculatorModel
-import model.state.CalculatorState
 import viewModel.UIState
 import viewModel.CalculatorViewModel
 
@@ -69,35 +69,45 @@ private fun mainPage(viewModel : CalculatorViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
+            // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
+            val listState = rememberLazyListState()
 
-        val displayScrollState = rememberScrollState( )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier.fillMaxWidth()
-                                .fillMaxHeight(0.25f)
-                                .padding(horizontal = 5.dp)
-                                .scrollable(displayScrollState, orientation = Orientation.Vertical),
-            content = {
-                uiState.strings.forEach{ str -> stackItemView(str) }
+            // See https://developer.android.com/jetpack/compose/side-effects
+            LaunchedEffect(uiState.stackAndMemory) {
+                if(uiState.stackAndMemory.isNotEmpty()) listState.scrollToItem(uiState.stackAndMemory.size-1 )
             }
-        )
-        Column( // Of Button Rows
-            verticalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp))
-            {
-                uiState.buttons.forEach{ rowOfStrings ->
-                    Row( // of Buttons
-                        horizontalArrangement =  Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).weight(1.0f)
-                    )
-                        {
-                            rowOfStrings.forEach { desc ->
-                                mkButton(viewModel, desc)
+
+            // Scrollable stuff
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier.fillMaxWidth()
+                                    .fillMaxHeight(0.25f)
+                                    .padding(horizontal = 5.dp),
+                state = listState
+            ) {  itemsIndexed(uiState.stackAndMemory) { _, item -> StackItemView(item)  } }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 5.dp),
+                content = {
+                    StackItemView( uiState.top ) }
+            )
+            Column( // Of Button Rows
+                verticalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp))
+                {
+                    uiState.buttons.forEach{ rowOfStrings ->
+                        Row( // of Buttons
+                            horizontalArrangement =  Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).weight(1.0f)
+                        )
+                            {
+                                rowOfStrings.forEach { desc ->
+                                    mkButton(viewModel, desc)
+                                }
                             }
-                        }
+                    }
                 }
-            }
     }
 }
 
@@ -138,7 +148,7 @@ private fun RowScope.mkButton(
 }
 
 @Composable
-fun stackItemView(str: String) {
+fun StackItemView(str: String) {
     Text(
         modifier = Modifier.fillMaxWidth().background(Color.hsl(146.0f, 0.11f, 0.65f)),
         text = str,
