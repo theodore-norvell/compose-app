@@ -88,8 +88,9 @@ private fun mainPage(viewModel : CalculatorViewModel) {
             {
                 uiState.buttons.forEach{ rowOfStrings ->
                     Row( // of Buttons
-                        horizontalArrangement =  Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxWidth().weight(1.0f))
+                        horizontalArrangement =  Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).weight(1.0f)
+                    )
                         {
                             rowOfStrings.forEach { desc ->
                                 mkButton(viewModel, desc)
@@ -112,7 +113,9 @@ private fun RowScope.mkButton(
     val primaryColor = Color.White
     val secondaryLabelStr = desc.secondaryOperation.name
     val secondaryColor = Color.Yellow
-    Column() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = secondaryLabelStr,
             color = secondaryColor,
