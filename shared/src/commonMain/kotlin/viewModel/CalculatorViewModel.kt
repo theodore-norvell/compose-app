@@ -12,12 +12,13 @@ import model.state.CalculatorModel
 data class UIState(
     val top : String,
     val stackAndMemory : List<String>,
-    val buttons : List<List<ButtonDescription>>
+    val buttons : List<List<ButtonDescription>>,
+    val errors : List<String>
 )
 
 class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewModel() {
     private val _uiState : MutableStateFlow<UIState>
-        = MutableStateFlow(UIState( "", emptyList(), calculatorModel.buttons()))
+        = MutableStateFlow(UIState( "", emptyList(), calculatorModel.buttons(), emptyList()))
     val uiState : StateFlow<UIState> = _uiState.asStateFlow()
 
     init {
@@ -38,9 +39,14 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
                 // Strings to display
                 val topString = calculatorModel.renderTop()
                 val strings = calculatorModel.renderStack()
+                val errors = calculatorModel.errors()
                 // Does not change buttons
-                it.copy( top = topString, stackAndMemory = strings )
+                it.copy( top = topString, stackAndMemory = strings, errors = errors )
             }
         }
+    }
+
+    fun cancelError() {
+        calculatorModel.cancelError()
     }
 }

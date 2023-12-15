@@ -1,10 +1,17 @@
 package model.state
 
+import model.ErrorMessageSink
 import model.data.formula.ErrorFormula
 
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
+    private val errors : MutableList<String> = MutableList(0) { "" }
+
+    private fun errorSink(message: String) {
+            errors.add( message ) ;
+            updateState(state)
+    }
 
     private fun standardButtonLayout(): List<List<ButtonDescription>> {
         return listOf(
@@ -57,10 +64,7 @@ class CalculatorModel : Observable() {
         notifyAllOservers()
     }
 
-    private fun error( message : String  )
-        = updateState( state.push( ErrorFormula(message) ) )
-
-    fun todo() = error( "TODO")
+    fun todo() = errorSink( "TODO This is a very long and detailed error message. How do I look?" )
 
     fun appendDigit(digit : Byte ) = updateState( state.appendDigit( digit ) )
 
@@ -70,4 +74,11 @@ class CalculatorModel : Observable() {
     fun negate() = updateState( state.negate() )
 
     fun swap() = updateState( state.swap() )
+    fun errors(): List<String> {
+        return errors.toList()
+    }
+    fun cancelError() {
+        errors.removeAt(0)
+        updateState( state )
+    }
 }

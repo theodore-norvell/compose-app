@@ -17,20 +17,34 @@ import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.BottomAppBar
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
+import kotlinx.coroutines.launch
 import model.state.ButtonDescription
 import model.state.CalculatorModel
 import viewModel.UIState
@@ -65,49 +79,89 @@ fun App(calculatorModel : CalculatorModel) {
 @Composable
 private fun mainPage(viewModel : CalculatorViewModel) {
     val uiState : UIState = viewModel.uiState.collectAsState().value
-    Column( modifier = Modifier.fillMaxSize().background( Color.DarkGray ),
+    val scaffoldState = rememberScaffoldState()
+    Scaffold(
+        scaffoldState = scaffoldState,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("UA")
+                },
+                actions =  {
+                    var baseMenuShowing : Boolean by remember { mutableStateOf(false) }
+                    var baseName : String by remember { mutableStateOf("10") }
+                    Button( onClick = {baseMenuShowing = true} ) { Text( "10" )}
+                    DropdownMenu(baseMenuShowing, onDismissRequest = {baseMenuShowing = false}, ) {
+                        DropdownMenuItem( text = {Text("10")}, onClick = {baseMenuShowing = false})
+                        DropdownMenuItem( text = {Text("16")}, onClick = {baseMenuShowing = false})
+                        DropdownMenuItem( text = {Text("2")}, onClick = {baseMenuShowing = false})
+                        DropdownMenuItem( text = {Text("8")}, onClick = {baseMenuShowing = false})
+                    }
+                }
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier.background(Color.hsl(0.17f, 0.17f, 0.31f)).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.spacedBy(5.dp )
         ) {
             // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
             val listState = rememberLazyListState()
 
             // See https://developer.android.com/jetpack/compose/side-effects
             LaunchedEffect(uiState.stackAndMemory) {
-                if(uiState.stackAndMemory.isNotEmpty()) listState.scrollToItem(uiState.stackAndMemory.size-1 )
+                if (uiState.stackAndMemory.isNotEmpty()) listState.scrollToItem(uiState.stackAndMemory.size - 1)
             }
 
             // Scrollable stuff
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.fillMaxWidth()
-                                    .fillMaxHeight(0.25f)
-                                    .padding(horizontal = 5.dp),
+                    .fillMaxHeight(0.25f)
+                    .padding(horizontal = 5.dp),
                 state = listState
-            ) {  itemsIndexed(uiState.stackAndMemory) { _, item -> StackItemView(item)  } }
+            ) { itemsIndexed(uiState.stackAndMemory) { _, item -> StackItemView(item) } }
+
+            // Top
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.fillMaxWidth()
                     .padding(horizontal = 5.dp),
                 content = {
-                    StackItemView( uiState.top ) }
+                    StackItemView(uiState.top)
+                }
             )
+
+            // Buttons
             Column( // Of Button Rows
                 verticalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp))
-                {
-                    uiState.buttons.forEach{ rowOfStrings ->
-                        Row( // of Buttons
-                            horizontalArrangement =  Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).weight(1.0f)
-                        )
-                            {
-                                rowOfStrings.forEach { desc ->
-                                    mkButton(viewModel, desc)
-                                }
-                            }
+                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp)
+            )
+            {
+                uiState.buttons.forEach { rowOfStrings ->
+                    Row( // of Buttons
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).weight(1.0f)
+                    )
+                    {
+                        rowOfStrings.forEach { desc ->
+                            mkButton(viewModel, desc)
+                        }
                     }
                 }
+            }
+        }
+    }
+    val scope = rememberCoroutineScope()
+    if( uiState.errors.isNotEmpty() ) {
+        scope.launch {
+            scaffoldState.snackbarHostState.showSnackbar(
+                message = uiState.errors[0],
+                actionLabel = "(dismiss)",
+                duration = SnackbarDuration.Short )
+            viewModel.cancelError()
+        }
     }
 }
 
