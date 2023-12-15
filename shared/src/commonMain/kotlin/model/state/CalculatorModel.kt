@@ -1,8 +1,5 @@
 package model.state
 
-import model.ErrorMessageSink
-import model.data.formula.ErrorFormula
-
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
