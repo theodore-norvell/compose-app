@@ -2,7 +2,7 @@ package model.data.formula
 
 import model.data.Environment
 
-data class VariableReference(val variableName : String ) : Formula {
+data class VariableReference(val variableName : String ) : Formula() {
 
     override fun render(env: Environment): String {
         return variableName

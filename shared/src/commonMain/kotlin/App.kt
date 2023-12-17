@@ -2,22 +2,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.BottomAppBar
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
@@ -26,7 +20,6 @@ import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,9 +30,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.mvvm.compose.getViewModel
@@ -50,7 +43,6 @@ import model.state.CalculatorModel
 import viewModel.UIState
 import viewModel.CalculatorViewModel
 
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 @Composable
 fun ImageAppTheme(
@@ -66,7 +58,6 @@ fun ImageAppTheme(
         content()
     }
 }
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App(calculatorModel : CalculatorModel) {
 
@@ -91,7 +82,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                     var baseMenuShowing : Boolean by remember { mutableStateOf(false) }
                     var baseName : String by remember { mutableStateOf("10") }
                     Button( onClick = {baseMenuShowing = true} ) { Text( "10" )}
-                    DropdownMenu(baseMenuShowing, onDismissRequest = {baseMenuShowing = false}, ) {
+                    DropdownMenu(baseMenuShowing, onDismissRequest = {baseMenuShowing = false} ) {
                         DropdownMenuItem( text = {Text("10")}, onClick = {baseMenuShowing = false})
                         DropdownMenuItem( text = {Text("16")}, onClick = {baseMenuShowing = false})
                         DropdownMenuItem( text = {Text("2")}, onClick = {baseMenuShowing = false})
@@ -102,9 +93,8 @@ private fun mainPage(viewModel : CalculatorViewModel) {
         }
     ) {
         Column(
-            modifier = Modifier.background(Color.hsl(0.17f, 0.17f, 0.31f)).fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(5.dp )
+            modifier = Modifier.background(Color.DarkGray).fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
             val listState = rememberLazyListState()
@@ -116,7 +106,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
 
             // Scrollable stuff
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier.fillMaxWidth()
                     .fillMaxHeight(0.25f)
                     .padding(horizontal = 5.dp),
@@ -125,7 +115,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
 
             // Top
             Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
                 modifier = Modifier.fillMaxWidth()
                     .padding(horizontal = 5.dp),
                 content = {
@@ -166,7 +156,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
 }
 
 @Composable
-private fun RowScope.mkButton(
+private fun mkButton(
     viewModel: CalculatorViewModel,
     desc : ButtonDescription
 ) {
@@ -186,9 +176,10 @@ private fun RowScope.mkButton(
             modifier = Modifier.background(Color.Transparent)
         )
         Button(
-            modifier = Modifier.weight(w),
+            modifier = Modifier.weight(w).shadow(20.dp, spotColor = Color.Black),
+            shape = AbsoluteCutCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.hsl(220.0f, 0.62f, 0.34f) ),
+                backgroundColor = Color.hsl(220.0f, 0.50f, 0.34f) ),
             onClick = { viewModel.click(desc) }
         ) {
             Text(
@@ -204,7 +195,9 @@ private fun RowScope.mkButton(
 @Composable
 fun StackItemView(str: String) {
     Text(
-        modifier = Modifier.fillMaxWidth().background(Color.hsl(146.0f, 0.11f, 0.65f)),
+        modifier = Modifier.fillMaxWidth()
+            .padding(2.dp)
+            .background(Color.hsl(146.0f, 0.11f, 0.65f)),
         text = str,
         color = Color.Black,
         fontSize = 20.sp,

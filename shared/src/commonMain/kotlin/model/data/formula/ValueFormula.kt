@@ -1,10 +1,11 @@
 package model.data.formula
 
 import model.data.Environment
+import model.data.value.Value
 
-data class ErrorFormula(val message : String, val formula : Formula ) : Formula() {
+data class ValueFormula(val value : Value) : Formula() { ///
     override fun render(env: Environment): String {
-        return "Err[$message](${formula.render(env)})"
+        return value.render()
     }
 
     override fun expand(env: Environment): Formula {
@@ -16,8 +17,11 @@ data class ErrorFormula(val message : String, val formula : Formula ) : Formula(
     }
 
     override fun freeVars(): Set<String> {
-        return formula.freeVars()
+        return emptySet()
     }
 
-    override fun asError() : ErrorFormula { return this }
+    override fun asFloatNumber() : ValueFormula { return this }
+
+
+    override fun negate(): Formula = ValueFormula( value.negate() )
 }

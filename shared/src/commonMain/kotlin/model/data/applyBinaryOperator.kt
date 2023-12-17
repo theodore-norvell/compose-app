@@ -1,8 +1,6 @@
 package model.data
 
 import model.data.formula.BinaryOperation
-import model.data.formula.ErrorFormula
-import model.data.formula.NumberFormula
 import model.data.formula.Formula
 
 fun applyBinaryOperator(op : BinaryOperator, left : Formula, right : Formula) : Formula {

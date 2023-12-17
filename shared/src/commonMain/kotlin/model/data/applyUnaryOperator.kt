@@ -1,9 +1,6 @@
 package model.data
 
 
-import model.data.formula.BinaryOperation
-import model.data.formula.ErrorFormula
-import model.data.formula.NumberFormula
 import model.data.formula.Formula
 import model.data.formula.UnaryOperation
 

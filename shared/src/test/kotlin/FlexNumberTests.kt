@@ -1,5 +1,5 @@
-import model.data.arithmetic.FlexNumber
-import model.data.arithmetic.NumberEntryState
+import model.data.value.FlexNumber
+import model.data.value.NumberEntryState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals

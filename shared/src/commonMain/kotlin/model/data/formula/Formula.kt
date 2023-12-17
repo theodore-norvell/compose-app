@@ -3,24 +3,21 @@ package model.data.formula
 import model.data.Environment
 import model.data.UnaryOperator
 
-interface Formula {
-    fun render( env : Environment) : String
+abstract class Formula : TopItem() {
 
-    fun expand( env : Environment) : Formula
+    override fun asNumberBuilder() : NumberBuilder? = null
+    abstract override fun render(env : Environment) : String
 
-    fun evaluate( env : Environment) : Formula
+    abstract fun expand( env : Environment) : Formula
 
-    fun freeVars( ) : Set<String>
+    abstract fun evaluate( env : Environment) : Formula
 
-    fun asError() : ErrorFormula? = null
+    abstract fun freeVars( ) : Set<String>
 
-    fun asFloatNumber() : NumberFormula? = null
+    open fun asError() : ErrorFormula? = null
 
-    fun precedence() : Int = 0
-    fun isClosed(): Boolean = false
-    fun canAppendDigit(base : Int, digit: Byte) = false
-    fun appendDigit(base: Int, digit: Byte) = this
-    fun close(): Formula = this
-    fun appendPoint(): Formula = this
-    fun negate(): Formula = UnaryOperation( op = UnaryOperator.NEGATE, this )
+    open fun asFloatNumber() : ValueFormula? = null
+
+    open fun precedence() : Int = 0
+    override fun negate(): Formula = UnaryOperation( op = UnaryOperator.NEGATE, this )
 }

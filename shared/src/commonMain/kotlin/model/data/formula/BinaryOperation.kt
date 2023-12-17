@@ -4,7 +4,7 @@ import model.data.Environment
 import model.data.BinaryOperator
 import model.data.applyBinaryOperator
 
-data class BinaryOperation(val op : BinaryOperator, val left : Formula, val right : Formula) : Formula {
+data class BinaryOperation(val op : BinaryOperator, val left : Formula, val right : Formula) : Formula() {
     override fun render(env: Environment): String {
         // TODO Eventually something more complex than a string will be needed
         // Or perhaps return a string in a latex subset language and leave
