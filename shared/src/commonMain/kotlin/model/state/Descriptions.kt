@@ -127,6 +127,7 @@ class Descriptions {
         )
         val DIGIT = {d : Byte ->ButtonDescription(
             ButtonOperation(d.toString()) {
+                println("DIGIT clicked")
                 it.appendDigit(d)
             },
             ButtonOperation( "TBD") {

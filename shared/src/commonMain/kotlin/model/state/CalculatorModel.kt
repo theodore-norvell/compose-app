@@ -5,9 +5,11 @@ class CalculatorModel : Observable() {
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
     private val errors : MutableList<String> = MutableList(0) { "" }
 
+    private var errorCounter = 0
     private fun errorSink(message: String) {
-            errors.add( message ) ;
-            updateState(state)
+        errors.add( "$message $errorCounter" ) ;
+        errorCounter += 1
+        updateState(state)
     }
 
     private fun standardButtonLayout(): List<List<ButtonDescription>> {
@@ -71,11 +73,10 @@ class CalculatorModel : Observable() {
     fun negate() = updateState( state.negate() )
 
     fun swap() = updateState( state.swap() )
-    fun errors(): List<String> {
-        return errors.toList()
-    }
+    fun nextError() : String? = if( errors.isEmpty() ) null else errors[0]
     fun cancelError() {
-        errors.removeAt(0)
-        updateState( state )
+        if( errors.isNotEmpty() ) {
+            errors.removeAt(0)
+            notifyAllOservers() }
     }
 }

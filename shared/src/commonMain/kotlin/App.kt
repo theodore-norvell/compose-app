@@ -144,13 +144,16 @@ private fun mainPage(viewModel : CalculatorViewModel) {
         }
     }
     val scope = rememberCoroutineScope()
-    if( uiState.errors.isNotEmpty() ) {
+    LaunchedEffect(uiState.error) {
         scope.launch {
-            scaffoldState.snackbarHostState.showSnackbar(
-                message = uiState.errors[0],
-                actionLabel = "(dismiss)",
-                duration = SnackbarDuration.Short )
-            viewModel.cancelError()
+            if( uiState.error != null ) {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = uiState.error,
+                    actionLabel = "(dismiss)",
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.cancelError()
+            }
         }
     }
 }
