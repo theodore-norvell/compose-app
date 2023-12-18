@@ -95,4 +95,6 @@ data class CalculatorState(
                 copy( top = stack.last(), stack = stack.subList(0,stack.size-1) + f1 ) } }
 
     fun negate(): CalculatorState = copy( top = top.negate() )
+
+    fun setBase(newBase: Int): CalculatorState = copy( mode = mode.copy( base = newBase) )
 }

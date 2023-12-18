@@ -81,4 +81,6 @@ class CalculatorModel : Observable() {
             errors.removeAt(0)
             notifyAllOservers() }
     }
+
+    fun setBase(newBase: Int) = updateState( state.setBase(newBase) )
 }

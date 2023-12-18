@@ -39,12 +39,12 @@ class NumberBuilder private constructor (
             when (numberEntryState) {
                 NumberEntryState.BEFORE_POINT -> copy(digits = newDigits)
                 NumberEntryState.AFTER_POINT -> copy(
-                    precision = lengthAfterPoint + 1,
+                    lengthAfterPoint = lengthAfterPoint + 1,
                     digits = newDigits
                 )
 
                 NumberEntryState.EXPONENT -> {
-                    val newExponent = 10* exponent + digit.toInt()
+                    val newExponent = 10*exponent + digit.toInt()
                     copy( exponent = newExponent )
                 }
             }
@@ -119,7 +119,7 @@ class NumberBuilder private constructor (
     private fun copy(numberEntryState : NumberEntryState = this.numberEntryState,
                      isNegative: Boolean = this.isNegative,
                      base : Int = this.base,
-                     precision : Int = this.lengthAfterPoint,
+                     lengthAfterPoint : Int = this.lengthAfterPoint,
                      digits : List<Byte> = this. digits,
                      exponent : Int = this.exponent,
                      exponentSign : Int = this.exponentSign
@@ -127,7 +127,7 @@ class NumberBuilder private constructor (
         numberEntryState,
         isNegative,
         base,
-        precision,
+        lengthAfterPoint,
         digits,
         exponent,
         exponentSign)

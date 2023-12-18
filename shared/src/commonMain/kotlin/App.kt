@@ -1,4 +1,5 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,15 +84,14 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                     Text("UA")
                 },
                 actions =  {
-                    var baseMenuShowing : Boolean by remember { mutableStateOf(false) }
-                    var baseName : String by remember { mutableStateOf("10") }
-                    Button( onClick = {baseMenuShowing = true} ) { Text( "10" )}
-                    DropdownMenu(baseMenuShowing, onDismissRequest = {baseMenuShowing = false} ) {
-                        DropdownMenuItem( text = {Text("10")}, onClick = {baseMenuShowing = false})
-                        DropdownMenuItem( text = {Text("16")}, onClick = {baseMenuShowing = false})
-                        DropdownMenuItem( text = {Text("2")}, onClick = {baseMenuShowing = false})
-                        DropdownMenuItem( text = {Text("8")}, onClick = {baseMenuShowing = false})
-                    }
+                    DropDownPicker( uiState.base,
+                        { viewModel.setBase( it ) },
+                        listOf( PickerOption( "2", 2),
+                            PickerOption( "8", 8),
+                            PickerOption( "10", 10),
+                            PickerOption( "12", 12),
+                            PickerOption( "16", 16))
+                        )
                 }
             )
         }
@@ -158,6 +162,24 @@ private fun mainPage(viewModel : CalculatorViewModel) {
     }
 }
 
+data class PickerOption<T>(
+    val name : String,
+    val value : T
+)
+@Composable
+fun <T>DropDownPicker(currentPickName : String,
+                      action : (T) ->Unit,
+                      options : List<PickerOption<T>>) {
+    var menuShowing : Boolean by remember { mutableStateOf(false) }
+    Button( onClick = {menuShowing = true} ) { Text( currentPickName )}
+    DropdownMenu(menuShowing, onDismissRequest = {menuShowing = false} ) {
+        options.forEach{
+            DropdownMenuItem(
+                text = {Text( it.name ) },
+                onClick = { action(it.value) ; menuShowing = false } )}
+    }
+}
+
 @Composable
 private fun mkButton(
     viewModel: CalculatorViewModel,
@@ -197,8 +219,12 @@ private fun mkButton(
 
 @Composable
 fun StackItemView(str: String) {
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+    // TODO Also restrict copy to stack.  Clicking on memory
+    // should have another effect.
     Text(
         modifier = Modifier.fillMaxWidth()
+            .clickable { clipboardManager.setText( AnnotatedString(str)) }
             .padding(2.dp)
             .background(Color.hsl(146.0f, 0.11f, 0.65f)),
         text = str,
