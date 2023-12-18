@@ -84,6 +84,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                     Text("UA")
                 },
                 actions =  {
+                    // Base Picker.
                     DropDownPicker( uiState.base,
                         { viewModel.setBase( it ) },
                         listOf( PickerOption( "2", 2),

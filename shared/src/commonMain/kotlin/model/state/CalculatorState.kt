@@ -23,13 +23,13 @@ data class CalculatorState(
     val mode : CalculatorModes = CalculatorModes()
 ) {
     private fun close(): CalculatorState =
-        when( top ) {
+        when (top) {
             is Formula -> this
-            is NumberBuilder -> copy( top = top.toFormula() )
+            is NumberBuilder -> copy(top = top.toFormula())
         }
 
     private fun ensureAfterEnter() =
-        copy( mode = mode.copy(entryState = EntryState.AFTER_ENTER) )
+        copy(mode = mode.copy(entryState = EntryState.AFTER_ENTER))
 
     private fun ensureOpen() =
         when (top) {
@@ -37,17 +37,17 @@ data class CalculatorState(
             is Formula -> {
                 val state0 = if (mode.entryState == EntryState.AFTER_ENTER) this else push(top)
                 val state1 = state0.ensureReady()
-                state1.copy(top = NumberBuilder.openZero( mode.base ))
+                state1.copy(top = NumberBuilder.openZero(mode.base))
             }
         }
 
 
-    private fun ensureReady() : CalculatorState =
-        close().run { copy( mode = mode.copy( entryState = EntryState.NORMAL)) }
+    private fun ensureReady(): CalculatorState =
+        close().run { copy(mode = mode.copy(entryState = EntryState.NORMAL)) }
 
-    fun appendDigit(digit : Byte) : CalculatorState =
+    fun appendDigit(digit: Byte): CalculatorState =
         ensureOpen().run {
-            when( top ) {
+            when (top) {
                 is Formula ->
                     this// Not actually possible
                 is NumberBuilder ->
@@ -55,46 +55,55 @@ data class CalculatorState(
                         copy(top = top.appendDigit(mode.base, digit))
                     else
                         this
-            } }
-
-    fun appendPoint() : CalculatorState =
-        ensureOpen().run {
-            when( top ) {
-                is Formula -> this
-                is NumberBuilder ->  copy( top = top.appendPoint( ) ) } }
-
-    fun startExponent() : CalculatorState =
-        ensureOpen().run {
-            when( top ) {
-                is Formula -> this
-                is NumberBuilder ->  copy( top = top.startExponent( ) ) } }
-
-    fun enter() =
-        when( top ) {
-            is Formula -> push(top ).run{ ensureAfterEnter() }
-            is NumberBuilder -> push(top.toFormula()).run{ ensureAfterEnter() }
+            }
         }
 
-        //close().run{ push(top )}.run{ ensureAfterEnter() }
+    fun appendPoint(): CalculatorState =
+        ensureOpen().run {
+            when (top) {
+                is Formula -> this
+                is NumberBuilder -> copy(top = top.appendPoint())
+            }
+        }
 
-    private fun push(item : TopItem ) : CalculatorState {
-        val f1 = when( top ) {
+    fun startExponent(): CalculatorState =
+        ensureOpen().run {
+            when (top) {
+                is Formula -> this
+                is NumberBuilder -> copy(top = top.startExponent())
+            }
+        }
+
+    fun enter() =
+        when (top) {
+            is Formula -> push(top).run { ensureAfterEnter() }
+            is NumberBuilder -> push(top.toFormula()).run { ensureAfterEnter() }
+        }
+
+    //close().run{ push(top )}.run{ ensureAfterEnter() }
+
+    private fun push(item: TopItem): CalculatorState {
+        val f1 = when (top) {
             is NumberBuilder -> top.toFormula()
             is Formula -> top
         }
-        return ensureReady().copy( top = item, stack = stack+f1 )
+        return ensureReady().copy(top = item, stack = stack + f1)
     }
 
     fun swap() =
         ensureReady().run {
-            if( stack.isEmpty() ) this
+            if (stack.isEmpty()) this
             else {
-                val f1 = when( top ) {
+                val f1 = when (top) {
                     is NumberBuilder -> top.toFormula()
-                    is Formula -> top }
-                copy( top = stack.last(), stack = stack.subList(0,stack.size-1) + f1 ) } }
+                    is Formula -> top
+                }
+                copy(top = stack.last(), stack = stack.subList(0, stack.size - 1) + f1)
+            }
+        }
 
-    fun negate(): CalculatorState = copy( top = top.negate() )
+    fun negate(): CalculatorState = copy(top = top.negate())
 
-    fun setBase(newBase: Int): CalculatorState = copy( mode = mode.copy( base = newBase) )
+    fun setBase(newBase: Int): CalculatorState =
+        ensureReady().run { copy(mode = mode.copy(base = newBase)) }
 }

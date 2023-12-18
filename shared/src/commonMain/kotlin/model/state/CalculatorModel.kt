@@ -82,5 +82,7 @@ class CalculatorModel : Observable() {
             notifyAllOservers() }
     }
 
-    fun setBase(newBase: Int) = updateState( state.setBase(newBase) )
+    fun setBase(newBase: Int) =
+        // Need to update the keyboard layout too.
+        updateState( state.setBase(newBase) )
 }
