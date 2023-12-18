@@ -28,33 +28,38 @@ object NumberRendering {
         isNegative : Boolean,
         base : Int,
         length : Int,
-        precision : Int,
-        getDigit: (Int)->Byte
-    ) = render(isNegative, base, length, precision, getDigit, 3, 3,',', ' ', '.')
-
-    private fun render(
-        isNegative : Boolean,
-        base : Int,
-        length : Int,
-        precision : Int,
+        lengthAfterPoint : Int,
         getDigit: (Int)->Byte,
-        groupLengthBefore : Int,
-        groupLengthAfter : Int,
-        separatorBefore : Char,
-        separatorAfter : Char,
-        radixPoint : Char  ) : String {
+        includeRadixPoint : Boolean = true
+    ) = render(isNegative, base, length, lengthAfterPoint, getDigit, includeRadixPoint, 3, 3,',', ' ', '.')
+
+    private fun render( isNegative : Boolean,
+                        base : Int,
+                        length : Int,
+                        lengthAfterPoint : Int,
+                        getDigit: (Int)->Byte,
+                        includeRadixPoint: Boolean,
+                        groupLengthBefore : Int,
+                        groupLengthAfter : Int,
+                        separatorBefore : Char,
+                        separatorAfter : Char,
+                        radixPoint : Char  )
+    : String {
+
         fun toChar( digit : Byte ) : Char {
             check(digit in 0..<base)
             return if(digit < 10) '0'+ digit.toInt() else 'A' + (digit.toInt() - 10)
         }
+
+        check( includeRadixPoint ||  lengthAfterPoint==0 )
         val finalBuilder = StringBuilder()
         if( isNegative) finalBuilder.append("-")
         // Digits before the dot
         run {
             val b = StringBuilder()
-            if( length > precision) {
-                var k = length-precision-1
-                (precision..<length).forEach { b.append( toChar(getDigit(k) )) ; --k }
+            if( length > lengthAfterPoint) {
+                var k = length-lengthAfterPoint-1
+                (lengthAfterPoint..<length).forEach { b.append( toChar(getDigit(k) )) ; --k }
             } else {
                 b.append('0')
             }
@@ -62,12 +67,11 @@ object NumberRendering {
             separate( b.toString(), finalBuilder, groupLengthBefore, separatorBefore, true)
         }
         // Radix point
-
-        finalBuilder.append( radixPoint )
-        run {
-            val a = StringBuilder()
-            (1 .. precision).forEach { a.append( getDigit(-it) ) }
-            separate( a.toString(), finalBuilder, groupLengthAfter, separatorAfter, false)
+        if( includeRadixPoint) {
+            finalBuilder.append(radixPoint)
+                val a = StringBuilder()
+                (1..lengthAfterPoint).forEach { a.append(getDigit(-it)) }
+                separate(a.toString(), finalBuilder, groupLengthAfter, separatorAfter, false)
         }
 
         return finalBuilder.toString()

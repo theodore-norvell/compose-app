@@ -1,4 +1,4 @@
-import model.data.value.FlexNumber
+import model.data.value.FlexNumberValue
 import model.data.value.NumberEntryState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -8,7 +8,7 @@ import org.junit.Test
 
 class FlexNumberTests {
     @Test fun makeFlexNumber() {
-        val zero = FlexNumber.openZero(10)
+        val zero = FlexNumberValue.openZero(10)
         assertEquals( "0", zero.render() )
         assertTrue( zero.canAppendDigit(10, 1))
         assertTrue( zero.digits.isEmpty() )
@@ -45,7 +45,7 @@ class FlexNumberTests {
     }
 
     @Test fun makeLongerFlexNumber() {
-        val zero = FlexNumber.openZero(10)
+        val zero = FlexNumberValue.openZero(10)
         assertEquals( "0", zero.render() )
         assertEquals( "0", zero.negate().render() )
         assertEquals( zero, zero.negate() )

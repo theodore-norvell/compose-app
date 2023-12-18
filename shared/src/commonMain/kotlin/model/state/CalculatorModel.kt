@@ -40,7 +40,7 @@ class CalculatorModel : Observable() {
                 Descriptions.DIGIT(3),
                 Descriptions.SUBTRACT
             ),
-            listOf(Descriptions.DIGIT(0), Descriptions.POINT, Descriptions.E10, Descriptions.ADD)
+            listOf(Descriptions.DIGIT(0), Descriptions.POINT, Descriptions.EXP, Descriptions.ADD)
 
         )
     }
@@ -70,6 +70,8 @@ class CalculatorModel : Observable() {
     fun enter() = updateState( state.enter() )
 
     fun appendPoint() =  updateState( state.appendPoint() )
+
+    fun startExponent() = updateState( state.startExponent() )
     fun negate() = updateState( state.negate() )
 
     fun swap() = updateState( state.swap() )

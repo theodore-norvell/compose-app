@@ -63,6 +63,12 @@ data class CalculatorState(
                 is Formula -> this
                 is NumberBuilder ->  copy( top = top.appendPoint( ) ) } }
 
+    fun startExponent() : CalculatorState =
+        ensureOpen().run {
+            when( top ) {
+                is Formula -> this
+                is NumberBuilder ->  copy( top = top.startExponent( ) ) } }
+
     fun enter() =
         when( top ) {
             is Formula -> push(top ).run{ ensureAfterEnter() }

@@ -1,8 +1,8 @@
 package model.data.value
 
-data class AComplexNumber  (
-    val realPart : ANumber,
-    val imaginaryPart : ANumber
+data class ComplexNumberValue  (
+    val realPart : ANumberValue,
+    val imaginaryPart : ANumberValue
 )
 : Value()
 {
@@ -18,5 +18,5 @@ data class AComplexNumber  (
                     "$imaginaryPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint)) $rootMinus1)"
         }
     }
-    override fun negate(): AComplexNumber = copy( realPart = realPart.negate(), imaginaryPart = imaginaryPart.negate())
+    override fun negate(): ComplexNumberValue = copy( realPart = realPart.negate(), imaginaryPart = imaginaryPart.negate())
 }

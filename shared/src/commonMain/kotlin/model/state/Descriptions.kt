@@ -117,9 +117,9 @@ class Descriptions {
                 it.todo()
             }
         )
-        val E10 = ButtonDescription(
+        val EXP = ButtonDescription(
             ButtonOperation("E") {
-                it.todo()
+                it.startExponent()
             },
             ButtonOperation( "TBD") {
                 it.todo()
