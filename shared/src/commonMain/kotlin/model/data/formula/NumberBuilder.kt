@@ -5,7 +5,7 @@ import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumberValue
 import model.data.value.NumberRendering
 
-class NumberBuilder constructor (
+class NumberBuilder private constructor (
     private val numberEntryState : NumberEntryState,
     private val isNegative : Boolean,
     private val base : Int,
@@ -27,7 +27,7 @@ class NumberBuilder constructor (
             NumberEntryState.BEFORE_POINT, NumberEntryState.AFTER_POINT ->
                 base == this.base && digit in 0 ..< base
             NumberEntryState.EXPONENT  ->
-                digit in 0..8
+                digit in 0..<10
         }
     }
 
@@ -78,7 +78,8 @@ class NumberBuilder constructor (
     /**
      * Give the digit corresponding to base to the k.
      * E.g. getDigit(0) gives the digit to the left of
-     * the radix point, while getDigit(-1)
+     * the radix point, while getDigit(-1).
+     * There is no consideration of the exponent here.
      */
     private fun getDigit(k : Int) : Byte {
         val i = k + lengthAfterPoint
@@ -86,17 +87,17 @@ class NumberBuilder constructor (
     }
 
     override fun render( env : Environment): String {
-        val lengthBeforePoint = digits.size - lengthAfterPoint
+        val length = digits.size
         return when (numberEntryState) {
             NumberEntryState.BEFORE_POINT ->
-                NumberRendering.render(isNegative, base, lengthBeforePoint, lengthAfterPoint, { getDigit(it) }, false)
+                NumberRendering.render(isNegative, base, length, lengthAfterPoint, { getDigit(it) }, false)
             NumberEntryState.AFTER_POINT ->
-                NumberRendering.render(isNegative, base, lengthBeforePoint, lengthAfterPoint, { getDigit(it) })
+                NumberRendering.render(isNegative, base, length, lengthAfterPoint, { getDigit(it) })
             NumberEntryState.EXPONENT -> {
                 val mantissa = NumberRendering.render(
                     isNegative,
                     base,
-                    lengthBeforePoint,
+                    length,
                     lengthAfterPoint,
                     { getDigit(it) })
                 val sign = if (exponentSign < 0) "-" else ""

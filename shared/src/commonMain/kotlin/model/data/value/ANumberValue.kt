@@ -1,5 +1,7 @@
 package model.data.value
 
+import kotlin.math.max
+
 
 /**
  * Base class for all numbers.  A number is not a value, but
@@ -80,19 +82,36 @@ class FlexNumberValue
         ): FlexNumberValue {
             check(base > 1)
             check(base < 36)
-            // Normalize by dropping all nonzero digits from the start and end of the string.
+            // Drop the 0 digits from the most significant end -- the far end
+            // Example input 00,123,000.00  e 0
+            //     So digits is [0,0,0,0,0,3,2,1,0,0], exponent is 0 and lengthAfterPoint is 2
             val lastNonZero = 1 + digits.indexOfLast { it.toInt() != 0 }
-            val newDigits = if (lastNonZero == digits.size) digits else digits.take(lastNonZero)
-            val firstNonZero = newDigits.indexOfFirst { it.toInt() != 0  }
-            val numberToDrop = if(firstNonZero == -1) newDigits.size else firstNonZero
-            val newNewDigits = newDigits.drop(numberToDrop)
-            val newExponent = if(newNewDigits.isEmpty() ) 0 else (exponent - lengthAfterPoint + numberToDrop)
-            val newIsNegative = if (newNewDigits.isEmpty()) false else isNegative
+            val digits1 = if (lastNonZero == digits.size) digits else digits.take(lastNonZero)
+            val digitsBeforePoint1 = digits1.size - lengthAfterPoint
+            // Example
+            //      digits1 is [0,0,0,0,0,3,2,1], digitsBeforePoint1 is 8-2 == 6
+
+            // Shift the Radix point to the end of the list.
+            val exponent1 = exponent + digitsBeforePoint1
+            // exponent1 is 6, so our number is .12300000 e 6
+
+            // Drop any zeros from the least significant end -- the near end
+            val firstNonZero = digits1.indexOfFirst { it.toInt() != 0  }
+            val numberToDrop = if(firstNonZero == -1) digits1.size else firstNonZero
+            val digits2 = digits1.drop(numberToDrop)
+            // Example
+            //     digits2 is [3,2,1].  Our number is .123 e 6
+
+            // If the number is 0, it should not be negative.
+            val isNegative2 = if (digits2.isEmpty()) false else isNegative
+            // If the number is 1 its exponent should be 1
+            val exponent2 = if (digits2.isEmpty()) 1 else exponent1
+
             return FlexNumberValue(
-                newIsNegative,
+                isNegative2,
                 base,
-                newNewDigits,
-                newExponent
+                digits2,
+                exponent2
             )
         }
 
@@ -104,25 +123,21 @@ class FlexNumberValue
     }
 
     override fun render(): String {
-        if ( digits.size <= exponent && exponent < digits.size + 4) {
-            val offset = exponent
-            return NumberRendering.render(
-                isNegative,
-                base,
-                exponent,
-                digits.size-exponent,
-                { getDigit(it - offset ) })
+        // Engineering notation
+        val digitsBefore : Int = (exponent-1).mod(3 ) + 1
+        val displayExponent = exponent - digitsBefore
+        check(displayExponent % 3 == 0)
+        check(digitsBefore in 1..3) { "exponent is $exponent digitsBefore is $digitsBefore" }
+        val digitsToDisplay : Int = max(digitsBefore, digits.size)
+        val digitsAfter = digitsToDisplay - digitsBefore
+        val mantissa = NumberRendering.render( isNegative,
+                                                base,
+                                                digitsToDisplay,
+                                                digitsAfter,
+                                                { getDigit(it+displayExponent) })
+        if ( displayExponent == 0 ) {
+            return mantissa
         } else {
-            val before = 1
-            val after = digits.size-1
-            val displayExponent = exponent - 1
-            val offset = 1
-            val mantissa = NumberRendering.render(
-                            isNegative,
-                            base,
-                            before,
-                            after,
-                            { getDigit(it - offset ) })
             val expPart = displayExponent.toString()
             return mantissa + "e" + expPart
         }
