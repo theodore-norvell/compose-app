@@ -134,7 +134,8 @@ class FlexNumberValue
                                                 base,
                                                 digitsToDisplay,
                                                 digitsAfter,
-                                                { getDigit(it+displayExponent) })
+                                                { getDigit(it+displayExponent) },
+                                                digitsAfter > 0)
         if ( displayExponent == 0 ) {
             return mantissa
         } else {

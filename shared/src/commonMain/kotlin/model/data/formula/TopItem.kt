@@ -8,4 +8,7 @@ sealed class TopItem {
     abstract fun negate() : TopItem
 
     abstract fun render( env : Environment) : String
+
+    abstract fun toFormula(): Formula
+    open fun asVariable(): VariableReference? = null
 }

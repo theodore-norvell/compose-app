@@ -6,6 +6,8 @@ import model.data.UnaryOperator
 abstract class Formula : TopItem() {
 
     override fun asNumberBuilder() : NumberBuilder? = null
+
+    override fun toFormula() : Formula = this
     abstract override fun render(env : Environment) : String
 
     abstract fun expand( env : Environment) : Formula
@@ -18,6 +20,8 @@ abstract class Formula : TopItem() {
 
     open fun asFloatNumber() : ValueFormula? = null
 
+    // Bigger number means lower precedence.
     open fun precedence() : Int = 0
     override fun negate(): Formula = UnaryOperation( op = UnaryOperator.NEGATE, this )
+
 }

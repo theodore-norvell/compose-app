@@ -1,12 +1,14 @@
 package model.state
 
+import model.data.BinaryOperator
+
 data class ButtonDescription(val primaryOperation : ButtonOperation, val secondaryOperation: ButtonOperation)
 
 data class ButtonOperation( val name : String, val clickAction : (CalculatorModel) -> Unit )
 class Descriptions {
     companion object {
         val RCL = ButtonDescription(
-                ButtonOperation("RCL") {
+                ButtonOperation("EVAL") {
                     it.todo()
                 },
                 ButtonOperation( "TBD") {
@@ -15,31 +17,31 @@ class Descriptions {
             )
         val STO = ButtonDescription(
             ButtonOperation("STO") {
-                it.todo()
+                it.store()
             },
             ButtonOperation( "TBD") {
                 it.todo()
             }
         )
         val X = ButtonDescription(
-            ButtonOperation("X") {
-                it.todo()
+            ButtonOperation("x") {
+                it.makeVarRef("x")
             },
             ButtonOperation( "TBD") {
                 it.todo()
             }
         )
         val Y = ButtonDescription(
-            ButtonOperation("Y") {
-                it.todo()
+            ButtonOperation("y") {
+                it.makeVarRef("y")
             },
             ButtonOperation( "TBD") {
                 it.todo()
             }
         )
         val Z = ButtonDescription(
-            ButtonOperation("Z") {
-                it.todo()
+            ButtonOperation("z") {
+                it.makeVarRef("z")
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -79,7 +81,7 @@ class Descriptions {
         )
         val DIVIDE = ButtonDescription(
             ButtonOperation("÷") {
-                it.todo()
+                it.makeBinOp(BinaryOperator.DIVIDE)
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -87,7 +89,7 @@ class Descriptions {
         )
         val MULTIPLY = ButtonDescription(
             ButtonOperation("×") {
-                it.todo()
+                it.makeBinOp(BinaryOperator.MULTIPLY)
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -95,7 +97,7 @@ class Descriptions {
         )
         val ADD = ButtonDescription(
             ButtonOperation("+") {
-                it.todo()
+                it.makeBinOp(BinaryOperator.ADD)
             },
             ButtonOperation( "TBD") {
                 it.todo()
@@ -103,7 +105,7 @@ class Descriptions {
         )
         val SUBTRACT = ButtonDescription(
             ButtonOperation("-") {
-                it.todo()
+                it.makeBinOp(BinaryOperator.SUBTRACT)
             },
             ButtonOperation( "TBD") {
                 it.todo()

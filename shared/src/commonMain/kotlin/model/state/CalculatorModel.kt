@@ -1,5 +1,7 @@
 package model.state
 
+import model.data.BinaryOperator
+
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
@@ -51,6 +53,12 @@ class CalculatorModel : Observable() {
     fun renderTop() : String = state.top.render(env())
     fun renderStack() : List<String> =  stack().map{ it.render(env()) }
 
+
+    fun renderEnv(): List<Pair<String, String>> {
+        val keys = env().keys().sortedBy {it}
+        return keys.map {Pair(it, env().get(it)!!.render( env() ))}
+    }
+
     fun env() = state.env
 
     fun mode() = state.mode
@@ -85,4 +93,8 @@ class CalculatorModel : Observable() {
     fun setBase(newBase: Int) =
         // Need to update the keyboard layout too.
         updateState( state.setBase(newBase) )
+
+    fun makeBinOp(op: BinaryOperator) = updateState( state.mkBinOp(op) )
+    fun makeVarRef(name: String) = updateState( state.mkVarRef( name ))
+    fun store()  = updateState( state.store() )
 }

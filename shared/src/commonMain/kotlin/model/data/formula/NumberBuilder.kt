@@ -107,7 +107,7 @@ class NumberBuilder private constructor (
         }
     }
 
-    fun toFormula(): Formula {
+    override fun toFormula(): Formula {
         // This always makes a FlexNumber.  We might want to make other kinds of numbers
         // depending on the mode.
         val real = FlexNumberValue.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)

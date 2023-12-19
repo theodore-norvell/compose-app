@@ -2,7 +2,7 @@ package model.data
 
 import model.data.formula.Formula
 
-class Environment {
+class Environment( private val map : Map<String, Formula> = HashMap() ) {
     // Invariant.  The environment contains no circularity
     // in the sense that there is no nonempty, finite sequence of
     // strings x of length n+1 > 0 such that all are in the key set,
@@ -11,7 +11,9 @@ class Environment {
     // For example there is no string x such that x in map[x].freeVars().
 
 
-    private val map : MutableMap<String, Formula> = HashMap()
+
+    fun keys() : List<String> = map.keys.toList()
+
     fun has( varName : String ) : Boolean {
         return map.containsKey(varName)
     }
@@ -37,9 +39,8 @@ class Environment {
         return ! found
     }
 
-    fun put( varName: String, formula: Formula) {
+    fun put( varName: String, formula: Formula) : Environment {
         check( canPut( varName, formula) )
-        map[varName] = formula
+        return Environment( map + (varName to formula) )
     }
-
 }

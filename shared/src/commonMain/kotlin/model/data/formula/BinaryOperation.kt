@@ -11,9 +11,9 @@ data class BinaryOperation(val op : BinaryOperator, val left : Formula, val righ
         // the rendering to boxes to a layer closer to the graphics.
         var l = left.render(env)
         var r = right.render(env)
-        // TODO worry about left associative and non-associative operators
-        if( op.precedence() <= left.precedence()) l = "($l)"
-        if( op.precedence() < right.precedence()) r = "($r)"
+        // TODO worry about right associative, associative, and non-associative operators
+        if( op.precedence() < left.precedence()) l = "($l)"
+        if( op.precedence() <= right.precedence()) r = "($r)"
         return "$l$op$r"
     }
 

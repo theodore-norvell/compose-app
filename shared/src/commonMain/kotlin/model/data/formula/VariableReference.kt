@@ -3,7 +3,8 @@ package model.data.formula
 import model.data.Environment
 
 data class VariableReference(val variableName : String ) : Formula() {
-
+    override fun asVariable(): VariableReference? = this
+    
     override fun render(env: Environment): String {
         return variableName
     }

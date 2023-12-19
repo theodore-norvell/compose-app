@@ -1,9 +1,12 @@
 package model.state
 
+import model.data.BinaryOperator
 import model.data.Environment
+import model.data.formula.BinaryOperation
 import model.data.formula.Formula
 import model.data.formula.NumberBuilder
 import model.data.formula.TopItem
+import model.data.formula.VariableReference
 
 enum class EntryState {
     NORMAL, AFTER_ENTER
@@ -83,10 +86,7 @@ data class CalculatorState(
     //close().run{ push(top )}.run{ ensureAfterEnter() }
 
     private fun push(item: TopItem): CalculatorState {
-        val f1 = when (top) {
-            is NumberBuilder -> top.toFormula()
-            is Formula -> top
-        }
+        val f1 = top.toFormula()
         return ensureReady().copy(top = item, stack = stack + f1)
     }
 
@@ -102,8 +102,45 @@ data class CalculatorState(
             }
         }
 
+    fun stackTop() : Formula? =
+        if( stack.isEmpty() ) null else stack.last()
+
+    fun popStack() : List<Formula> = stack.dropLast(1)
     fun negate(): CalculatorState = copy(top = top.negate())
 
     fun setBase(newBase: Int): CalculatorState =
         ensureReady().run { copy(mode = mode.copy(base = newBase)) }
+
+    fun mkBinOp(op: BinaryOperator): CalculatorState =
+        ensureReady().run {
+            val left = stackTop()
+            if( left == null ) this
+            else {
+                val right = top.toFormula()
+                val newTop = BinaryOperation( op, left, right)
+                copy( top = newTop, stack = popStack() )
+            }
+        }
+
+    fun mkVarRef(name: String): CalculatorState =
+        ensureReady().run{
+            push( VariableReference(name) )
+        }
+
+    fun store(): CalculatorState =
+        ensureReady().run {
+            val topAsVar = top.asVariable()
+            if( topAsVar == null ) this
+            else if( stack.isEmpty() ) this
+            else {
+                val f = stack.last()
+                val name = topAsVar.variableName
+                if( env.canPut( name, f )) {
+                    copy( top = f, stack = stack.dropLast(1), env = env.put(name, f))
+                } else {
+                    // TODO emit error
+                    this
+                }
+            }
+        }
 }

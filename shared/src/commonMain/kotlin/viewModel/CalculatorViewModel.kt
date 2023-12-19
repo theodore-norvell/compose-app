@@ -11,7 +11,8 @@ import model.state.CalculatorModel
 
 data class UIState(
     val top : String,
-    val stackAndMemory : List<String>,
+    val stackStrings : List<String>,
+    val envPairs : List<Pair<String,String>>,
     val buttons : List<List<ButtonDescription>>,
     val base : String,
     val error : String? = null,
@@ -19,7 +20,7 @@ data class UIState(
 
 class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewModel() {
     private val _uiState : MutableStateFlow<UIState>
-        = MutableStateFlow(UIState( "", emptyList(), calculatorModel.buttons(), "", null))
+        = MutableStateFlow(UIState( "", emptyList(), emptyList(), calculatorModel.buttons(), "", null))
     val uiState : StateFlow<UIState> = _uiState.asStateFlow()
 
     init {
@@ -39,11 +40,12 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
             _uiState.update {
                 // Strings to display
                 val topString = calculatorModel.renderTop()
-                val strings = calculatorModel.renderStack()
+                val stackStrings = calculatorModel.renderStack()
+                val envPairs = calculatorModel.renderEnv()
                 val error = calculatorModel.nextError()
                 val base = calculatorModel.mode().base.toString()
                 // Does not change buttons
-                it.copy( top = topString, stackAndMemory = strings, base = base, error = error )
+                it.copy( top = topString, stackStrings = stackStrings, envPairs = envPairs, base = base, error = error )
             }
         }
     }
@@ -53,4 +55,6 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
     }
 
     fun setBase( newBase: Int ) = calculatorModel.setBase( newBase )
+
+    fun makeVarRef(name: String) = calculatorModel.makeVarRef( name )
 }
