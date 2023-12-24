@@ -1,9 +1,6 @@
 import model.data.Environment
 import model.data.formula.NumberBuilder
-import model.data.value.FlexNumberValue
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 

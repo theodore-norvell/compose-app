@@ -2,17 +2,17 @@ package model.data.formula
 
 import model.data.Environment
 import model.data.value.ComplexNumberValue
-import model.data.value.FlexNumberValue
+import model.data.value.FlexNumber
 import model.data.value.NumberRendering
 
 class NumberBuilder private constructor (
-    private val numberEntryState : NumberEntryState,
-    private val isNegative : Boolean,
-    private val base : Int,
-    private val lengthAfterPoint : Int,
-    private val digits : List<Byte>,
-    private val exponent : Int,
-    private val exponentSign: Int )
+    val numberEntryState : NumberEntryState,
+    val isNegative : Boolean,
+    val base : Int,
+    val lengthAfterPoint : Int,
+    val digits : List<Byte>,
+    val exponent : Int,
+    val exponentSign: Int )
 : TopItem()
 // NB can't be data class as it has a private constructor
 {
@@ -107,11 +107,14 @@ class NumberBuilder private constructor (
         }
     }
 
+    fun toValue() : FlexNumber
+        = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
+
     override fun toFormula(): Formula {
         // This always makes a FlexNumber.  We might want to make other kinds of numbers
         // depending on the mode.
-        val real = FlexNumberValue.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
-        val imaginary = FlexNumberValue.mkZero(base)
+        val real = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
+        val imaginary = FlexNumber.mkZero(base)
         val value = ComplexNumberValue(real, imaginary)
         return ValueFormula(value)
     }
