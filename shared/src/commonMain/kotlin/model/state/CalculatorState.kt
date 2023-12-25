@@ -2,6 +2,7 @@ package model.state
 
 import model.data.BinaryOperator
 import model.data.Environment
+import model.data.NumberDisplayMode
 import model.data.formula.BinaryOperation
 import model.data.formula.Formula
 import model.data.formula.NumberBuilder
@@ -13,9 +14,11 @@ enum class EntryState {
 }
 
 private val defaultBase = 10
+private val defaultDisplayMode = NumberDisplayMode.Scientific
 
 data class CalculatorModes (
     val base : Int = defaultBase,
+    val displayMode : NumberDisplayMode = defaultDisplayMode,
     val entryState : EntryState = EntryState.AFTER_ENTER
 )
 

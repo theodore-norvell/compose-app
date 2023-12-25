@@ -1,10 +1,11 @@
 package model.data.formula
 
+import model.data.DisplayPreferences
 import model.data.Environment
 
 data class ErrorFormula(val message : String, val formula : Formula ) : Formula() {
-    override fun render(env: Environment): String {
-        return "Err[$message](${formula.render(env)})"
+    override fun render(displayPrefs: DisplayPreferences): String {
+        return "Err[$message](${formula.render()})"
     }
 
     override fun expand(env: Environment): Formula {

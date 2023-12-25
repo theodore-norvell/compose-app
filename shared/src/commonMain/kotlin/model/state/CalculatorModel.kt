@@ -1,6 +1,7 @@
 package model.state
 
 import model.data.BinaryOperator
+import model.data.DisplayPreferences
 
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
@@ -50,13 +51,27 @@ class CalculatorModel : Observable() {
     fun top() = state.top
     fun stack() = state.stack
 
-    fun renderTop() : String = state.top.render(env())
-    fun renderStack() : List<String> =  stack().map{ it.render(env()) }
+    private fun makeDisplayPreferences() : DisplayPreferences {
+        // Combine information from preferences and modes.
+        return DisplayPreferences(
+            base = state.mode.base,
+            state.mode.displayMode,
+            maxDigits = 20,
+            maxLengthAfterPoint = 20,
+            groupLengthBefore = 3,
+            groupLengthAfter = 3,
+            separatorBefore = ',',
+            separatorAfter = ' ',
+            radixPoint = '.'
+        )
+    }
+    fun renderTop() : String = state.top.render(makeDisplayPreferences())
+    fun renderStack() : List<String> =  stack().map{ it.render(makeDisplayPreferences()) }
 
 
     fun renderEnv(): List<Pair<String, String>> {
         val keys = env().keys().sortedBy {it}
-        return keys.map {Pair(it, env().get(it)!!.render( env() ))}
+        return keys.map {Pair(it, env().get(it)!!.render(makeDisplayPreferences()))}
     }
 
     fun env() = state.env

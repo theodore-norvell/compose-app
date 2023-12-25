@@ -1,6 +1,7 @@
 package model.data.value
 
 import model.data.ComputePreferences
+import model.data.DisplayPreferences
 
 data class ComplexNumberValue  (
     val realPart : ANumber,
@@ -8,16 +9,15 @@ data class ComplexNumberValue  (
 )
 : Value()
 {
-    override fun render(): String {
-        // TODO, accommodate display preferences
+    override fun render(displayPrefs: DisplayPreferences): String {
         val rootMinus1 = "i"
         if( imaginaryPart.isZero() ) {
             return realPart.render()
         } else if( realPart.isZero()) {
             return imaginaryPart.render() + " " + rootMinus1
         } else {
-            return "($realPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint)) + " +
-                    "$imaginaryPart.render(groupLengthBefore, groupLengthAfter, separatorBefore, separatorAfter, radixPoint)) $rootMinus1)"
+            return "($realPart.render(displayPrefs)) + " +
+                    "$imaginaryPart.render(displayPrefs)) $rootMinus1)"
         }
     }
     override fun negate(): ComplexNumberValue = copy( realPart = realPart.negated(), imaginaryPart = imaginaryPart.negated())

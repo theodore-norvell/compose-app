@@ -59,7 +59,7 @@ object NumberRendering {
             val b = StringBuilder()
             if( length > lengthAfterPoint) {
                 var k = length-lengthAfterPoint-1
-                (lengthAfterPoint..<length).forEach { b.append( toChar(getDigit(k) )) ; --k }
+                (lengthAfterPoint..<length).forEach { _ -> b.append( toChar(getDigit(k) )) ; --k }
             } else {
                 b.append('0')
             }

@@ -1,11 +1,12 @@
 package model.data.formula
 
+import model.data.DisplayPreferences
 import model.data.Environment
 
 data class VariableReference(val variableName : String ) : Formula() {
     override fun asVariable(): VariableReference? = this
     
-    override fun render(env: Environment): String {
+    override fun render(displayPrefs: DisplayPreferences): String {
         return variableName
     }
 

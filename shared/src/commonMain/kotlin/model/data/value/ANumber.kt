@@ -1,6 +1,8 @@
 package model.data.value
 
 import model.data.ComputePreferences
+import model.data.DisplayPreferences
+import model.data.NumberDisplayMode
 import kotlin.math.max
 import kotlin.math.min
 
@@ -12,7 +14,7 @@ import kotlin.math.min
 
 sealed class ANumber {
 
-    abstract fun render() : String
+    abstract fun render(displayPrefs: DisplayPreferences) : String
 
     abstract fun isZero() : Boolean
     abstract fun negated() : ANumber
@@ -125,27 +127,44 @@ class FlexNumber
         return copy( isNegative = !isNegative )
     }
 
-    override fun render(): String {
-        // Engineering notation
-        val digitsBefore : Int = (exponent-1).mod(3 ) + 1
-        val displayExponent = exponent - digitsBefore
-        check(displayExponent % 3 == 0)
-        check(digitsBefore in 1..3) { "exponent is $exponent digitsBefore is $digitsBefore" }
-        val digitsToDisplay : Int = max(digitsBefore, digits.size)
-        val digitsAfter = digitsToDisplay - digitsBefore
-        val mantissa = NumberRendering.render( isNegative,
-                                                base,
-                                                digitsToDisplay,
-                                                digitsAfter,
-                                                { getDigit(it+displayExponent) },
-                                                digitsAfter > 0)
-        if ( displayExponent == 0 ) {
-            return mantissa
-        } else {
-            val expPart = displayExponent.toString()
-            return mantissa + "e" + expPart
-        }
-    }
+    override fun render(displayPrefs: DisplayPreferences): String {
+        // TODO eliminate magic number 1024
+        val numberToDisplay = this.convertedToBase( displayPrefs.base, 1024 )
+        val digitsBefore: Int =
+            when( displayPrefs.mode ) {
+                NumberDisplayMode.Engineering ->
+                    (numberToDisplay.exponent - 1).mod(3) + 1
+                NumberDisplayMode.Scientific -> 1
+                NumberDisplayMode.NoExponent ->
+                    if( numberToDisplay.exponent < 0 )
+                        0
+                    else if( numberToDisplay.exponent <= displayPrefs.maxDigits )
+                        numberToDisplay.exponent
+                    else
+                        displayPrefs.maxDigits
+                NumberDisplayMode.Auto ->
+                    if( numberToDisplay.exponent in 0..<10 ) numberToDisplay.exponent
+                    else if(numberToDisplay.exponent in (-3)..<0 ) 0
+                    else (numberToDisplay.exponent - 1).mod(3) + 1
+            }
+            val displayExponent = numberToDisplay.exponent - digitsBefore
+            val digitsToDisplay: Int = max(digitsBefore, min(numberToDisplay.digits.size, displayPrefs.maxDigits))
+            val digitsAfter = max(digitsToDisplay - digitsBefore, displayPrefs.maxLengthAfterPoint )
+            val mantissa = NumberRendering.render(
+                numberToDisplay.isNegative,
+                numberToDisplay.base,
+                digitsToDisplay,
+                digitsAfter,
+                { getDigit(it + displayExponent) },
+                digitsAfter > 0
+            )
+            if (displayExponent == 0) {
+                return mantissa
+            } else {
+                val expPart = displayExponent.toString()
+                return mantissa + "e" + expPart
+            }
+}
 
     private fun copy(isNegative: Boolean = this.isNegative,
                      base : Int = this.base,

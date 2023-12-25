@@ -1,6 +1,6 @@
 package model.data.formula
 
-import model.data.Environment
+import model.data.DisplayPreferences
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
 import model.data.value.NumberRendering
@@ -86,7 +86,7 @@ class NumberBuilder private constructor (
         return if( i >= digits.size) 0 else if( i < 0 ) 0 else digits[i]
     }
 
-    override fun render( env : Environment): String {
+    override fun render(displayPrefs: DisplayPreferences): String {
         val length = digits.size
         return when (numberEntryState) {
             NumberEntryState.BEFORE_POINT ->

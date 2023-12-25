@@ -1,5 +1,6 @@
 package model.data.formula
 
+import model.data.DisplayPreferences
 import model.data.Environment
 import model.data.UnaryOperator
 
@@ -8,7 +9,7 @@ abstract class Formula : TopItem() {
     override fun asNumberBuilder() : NumberBuilder? = null
 
     override fun toFormula() : Formula = this
-    abstract override fun render(env : Environment) : String
+    abstract override fun render(displayPrefs: DisplayPreferences): String
 
     abstract fun expand( env : Environment) : Formula
 
