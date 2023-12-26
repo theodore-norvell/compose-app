@@ -118,7 +118,7 @@ data class CalculatorState(
         ensureReady().run { copy(mode = mode.copy(base = newBase)) }
 
     fun setDisplayMode(newMode: NumberDisplayMode): CalculatorState =
-        copy(mode = mode.copy(displayMode = newMode))
+        ensureReady().run { copy(mode = mode.copy(displayMode = newMode)) }
 
     fun mkBinOp(op: BinaryOperator): CalculatorState =
         ensureReady().run {
