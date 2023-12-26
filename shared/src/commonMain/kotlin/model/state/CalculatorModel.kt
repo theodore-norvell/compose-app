@@ -2,6 +2,7 @@ package model.state
 
 import model.data.BinaryOperator
 import model.data.DisplayPreferences
+import model.data.NumberDisplayMode
 
 class CalculatorModel : Observable() {
     private var state = CalculatorState()
@@ -9,7 +10,7 @@ class CalculatorModel : Observable() {
     private val errors : MutableList<String> = MutableList(0) { "" }
 
     private var errorCounter = 0
-    private fun errorSink(message: String) {
+    private fun emitError(message: String) {
         errors.add( "$message $errorCounter" ) ;
         errorCounter += 1
         updateState(state)
@@ -53,17 +54,56 @@ class CalculatorModel : Observable() {
 
     private fun makeDisplayPreferences() : DisplayPreferences {
         // Combine information from preferences and modes.
-        return DisplayPreferences(
-            base = state.mode.base,
-            state.mode.displayMode,
-            maxDigits = 20,
-            maxLengthAfterPoint = 20,
-            groupLengthBefore = 3,
-            groupLengthAfter = 3,
-            separatorBefore = ',',
-            separatorAfter = ' ',
-            radixPoint = '.'
-        )
+        when( state.mode.base ) {
+            2 ->
+                return DisplayPreferences(
+                    base = state.mode.base,
+                    mode = state.mode.displayMode,
+                    maxDigits = 300,
+                    maxLengthAfterPoint = 20,
+                    groupLengthBefore = 4,
+                    groupLengthAfter = 4,
+                    separatorBefore = ' ',
+                    separatorAfter = ' ',
+                    radixPoint = '.'
+                )
+            7, 8 ->
+                return DisplayPreferences(
+                    base = state.mode.base,
+                    mode = state.mode.displayMode,
+                    maxDigits = 100,
+                    maxLengthAfterPoint = 20,
+                    groupLengthBefore = 3,
+                    groupLengthAfter = 3,
+                    separatorBefore = ' ',
+                    separatorAfter = ' ',
+                    radixPoint = '.'
+                )
+             16 ->
+                return DisplayPreferences(
+                    base = state.mode.base,
+                    mode = state.mode.displayMode,
+                    maxDigits = 100,
+                    maxLengthAfterPoint = 20,
+                    groupLengthBefore = 2,
+                    groupLengthAfter = 2,
+                    separatorBefore = ' ',
+                    separatorAfter = ' ',
+                    radixPoint = '.'
+                )
+            else ->
+                return DisplayPreferences(
+                    base = state.mode.base,
+                    mode = state.mode.displayMode,
+                    maxDigits = 100,
+                    maxLengthAfterPoint = 20,
+                    groupLengthBefore = 3,
+                    groupLengthAfter = 3,
+                    separatorBefore = ',',
+                    separatorAfter = ' ',
+                    radixPoint = '.'
+                )
+        }
     }
     fun renderTop() : String = state.top.render(makeDisplayPreferences())
     fun renderStack() : List<String> =  stack().map{ it.render(makeDisplayPreferences()) }
@@ -86,7 +126,7 @@ class CalculatorModel : Observable() {
         notifyAllOservers()
     }
 
-    fun todo() = errorSink( "TODO This is a very long and detailed error message. How do I look?" )
+    fun todo() = emitError( "TODO This is a very long and detailed error message. How do I look?" )
 
     fun appendDigit(digit : Byte ) = updateState( state.appendDigit( digit ) )
 
@@ -109,7 +149,10 @@ class CalculatorModel : Observable() {
         // Need to update the keyboard layout too.
         updateState( state.setBase(newBase) )
 
+    fun setDisplayMode( newMode : NumberDisplayMode) =
+        updateState( state.setDisplayMode( newMode  ))
+
     fun makeBinOp(op: BinaryOperator) = updateState( state.mkBinOp(op) )
     fun makeVarRef(name: String) = updateState( state.mkVarRef( name ))
-    fun store()  = updateState( state.store() )
+    fun store()  = updateState( state.store({str -> emitError(str)}) )
 }

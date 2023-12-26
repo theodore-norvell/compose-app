@@ -10,7 +10,7 @@ data class UnaryOperation(val op : UnaryOperator, val right : Formula) : Formula
         // TODO Eventually something more complex than a string will be needed
         // Or perhaps return a string in a latex subset language and leave
         // the rendering to boxes to a layer closer to the graphics.
-        var r = right.render()
+        var r = right.render(displayPrefs)
         // TODO worry about left associative and non-associative operators
         if( op.precedence() < right.precedence()) r = "($r)"
         return "$op$r"

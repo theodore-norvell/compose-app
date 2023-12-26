@@ -10,8 +10,8 @@ data class BinaryOperation(val op : BinaryOperator, val left : Formula, val righ
         // TODO Eventually something more complex than a string will be needed
         // Or perhaps return a string in a latex subset language and leave
         // the rendering to boxes to a layer closer to the graphics.
-        var l = left.render()
-        var r = right.render()
+        var l = left.render(displayPrefs)
+        var r = right.render(displayPrefs)
         // TODO worry about right associative, associative, and non-associative operators
         if( op.precedence() < left.precedence()) l = "($l)"
         if( op.precedence() <= right.precedence()) r = "($r)"

@@ -24,7 +24,7 @@ class ArithmeticTests {
             digitList += (todo % base).toByte()
             todo = todo / base
         }
-        val result = NumberBuilder.openZero(base).appendDigits( digitList.reversed() ).toValue()
+        val result = NumberBuilder.zero(base).appendDigits( digitList.reversed() ).toValue()
         return if( n < 0) result.negated() else result
     }
 
@@ -78,7 +78,7 @@ class ArithmeticTests {
 
         val n23001 = toValue( 10, 23001)
         val (actual, remainder) = n23001.dividedBy(1000,5, false)
-        val expected = NumberBuilder.openZero(10)
+        val expected = NumberBuilder.zero(10)
             .appendDigit(10, 2)
             .appendDigit(10, 3)
             .appendPoint()
@@ -112,7 +112,7 @@ class ArithmeticTests {
     }
 
     @Test fun multiply0() {
-        val thirteenBase2 = NumberBuilder.openZero(2)
+        val thirteenBase2 = NumberBuilder.zero(2)
             .appendDigit(2, 1)
             .appendDigit(2, 1)
             .appendDigit(2, 0)
@@ -177,7 +177,7 @@ class ArithmeticTests {
         val twenty3Point0001Base10 = n23001.dividedBy(1000,5, false).first
 
         var actual = twenty3Point0001Base10.convertedToBase(2, 33)
-        var expected = NumberBuilder.openZero(2)
+        var expected = NumberBuilder.zero(2)
             .appendDigit(2, 1)
             .appendDigit(2, 0)
             .appendDigit(2, 1)

@@ -1,6 +1,6 @@
 package model.data
 
-class DisplayPreferences(
+data class DisplayPreferences(
     val base : Int,
     val mode : NumberDisplayMode,
     val maxDigits : Int,

@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import kotlinx.coroutines.launch
+import model.data.NumberDisplayMode
 import model.state.ButtonDescription
 import model.state.CalculatorModel
 import viewModel.UIState
@@ -82,13 +83,22 @@ private fun mainPage(viewModel : CalculatorViewModel) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text("UA")
+                    Text("∀A")
                 },
                 actions =  {
+                    // Display mode Picker.
+                    DropDownPicker( uiState.displayMode,
+                        { viewModel.setDisplayMode( it ) },
+                        listOf( PickerOption( "Auto", NumberDisplayMode.Auto),
+                            PickerOption( "Eng", NumberDisplayMode.Engineering),
+                            PickerOption( "Sci", NumberDisplayMode.Scientific),
+                            PickerOption( "Int", NumberDisplayMode.NoExponent))
+                    )
                     // Base Picker.
                     DropDownPicker( uiState.base,
                         { viewModel.setBase( it ) },
                         listOf( PickerOption( "2", 2),
+                            PickerOption( "7", 7),
                             PickerOption( "8", 8),
                             PickerOption( "10", 10),
                             PickerOption( "12", 12),

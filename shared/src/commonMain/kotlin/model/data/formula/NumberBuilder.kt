@@ -1,5 +1,6 @@
 package model.data.formula
 
+import model.data.ComputePreferences
 import model.data.DisplayPreferences
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
@@ -18,10 +19,11 @@ class NumberBuilder private constructor (
 {
     enum class NumberEntryState { BEFORE_POINT, AFTER_POINT, EXPONENT }
     companion object {
-        fun openZero(base: Int): NumberBuilder = NumberBuilder( NumberEntryState.BEFORE_POINT, false, base, 0, emptyList(), 0, +1)
+        fun zero(base: Int): NumberBuilder = NumberBuilder( NumberEntryState.BEFORE_POINT, false, base, 0, emptyList(), 0, +1)
     }
 
     override fun asNumberBuilder() : NumberBuilder = this
+
     fun canAppendDigit(base: Int, digit: Byte): Boolean {
         return when( numberEntryState ) {
             NumberEntryState.BEFORE_POINT, NumberEntryState.AFTER_POINT ->
@@ -31,24 +33,47 @@ class NumberBuilder private constructor (
         }
     }
 
+    fun convertBaseTo( base : Int ) : NumberBuilder {
+        if( base == this.base ) return this
+        else {
+            val number =  FlexNumber.create(isNegative, this.base, lengthAfterPoint, digits, exponent*exponentSign)
+            // TODO Change 1024 to computePrefs.size
+            val inNewBase = number.convertedToBase(base,1024 )
+            val newDigits = inNewBase.digits
+            val newLengthAfterPoint = newDigits.size - inNewBase.exponent
+            when (numberEntryState) {
+                NumberEntryState.BEFORE_POINT ->
+                    return copy( base = base, lengthAfterPoint = newLengthAfterPoint, digits = newDigits )
+                NumberEntryState.AFTER_POINT ->
+                    return copy( base = base, lengthAfterPoint = newLengthAfterPoint, digits = newDigits )
+
+                NumberEntryState.EXPONENT -> {
+                    return copy( base = base, lengthAfterPoint = newLengthAfterPoint, digits = newDigits,
+                        exponent = 0)
+                }
+            }
+        }
+    }
+
     fun appendDigit(base: Int, digit: Byte): NumberBuilder {
         // Note that appending a digit to the number means prepending the digit
         // to our digit list.
-        return if(canAppendDigit(base, digit)) {
+        if(canAppendDigit(base, digit)) {
             val newDigits = listOf(digit) + digits
             when (numberEntryState) {
-                NumberEntryState.BEFORE_POINT -> copy(digits = newDigits)
-                NumberEntryState.AFTER_POINT -> copy(
+                NumberEntryState.BEFORE_POINT -> return copy(digits = newDigits)
+                NumberEntryState.AFTER_POINT -> return copy(
                     lengthAfterPoint = lengthAfterPoint + 1,
                     digits = newDigits
                 )
 
                 NumberEntryState.EXPONENT -> {
                     val newExponent = 10*exponent + digit.toInt()
-                    copy( exponent = newExponent )
+                    return copy( exponent = newExponent )
                 }
             }
-        } else this
+        } else
+            return this
     }
 
     fun appendPoint(): NumberBuilder {
@@ -87,22 +112,47 @@ class NumberBuilder private constructor (
     }
 
     override fun render(displayPrefs: DisplayPreferences): String {
-        val length = digits.size
-        return when (numberEntryState) {
-            NumberEntryState.BEFORE_POINT ->
-                NumberRendering.render(isNegative, base, length, lengthAfterPoint, { getDigit(it) }, false)
-            NumberEntryState.AFTER_POINT ->
-                NumberRendering.render(isNegative, base, length, lengthAfterPoint, { getDigit(it) })
-            NumberEntryState.EXPONENT -> {
-                val mantissa = NumberRendering.render(
-                    isNegative,
-                    base,
-                    length,
-                    lengthAfterPoint,
-                    { getDigit(it) })
-                val sign = if (exponentSign < 0) "-" else ""
-                val exp = exponent.toString(10)
-                mantissa + "e" + sign + exp
+        if( displayPrefs.base != this.base ) {
+            return this.convertBaseTo(displayPrefs.base).render(displayPrefs)
+        } else {
+            val length = digits.size
+            return when (numberEntryState) {
+                NumberEntryState.BEFORE_POINT ->
+                    NumberRendering.render(
+                        isNegative,
+                        base,
+                        length,
+                        lengthAfterPoint,
+                        { getDigit(it) },
+                        false,
+                        displayPrefs
+                    )
+
+                NumberEntryState.AFTER_POINT ->
+                    NumberRendering.render(
+                        isNegative,
+                        base,
+                        length,
+                        lengthAfterPoint,
+                        { getDigit(it) },
+                        true,
+                        displayPrefs
+                    )
+
+                NumberEntryState.EXPONENT -> {
+                    val mantissa = NumberRendering.render(
+                        isNegative,
+                        base,
+                        length,
+                        lengthAfterPoint,
+                        { getDigit(it) },
+                        true,
+                        displayPrefs
+                    )
+                    val sign = if (exponentSign < 0) "-" else ""
+                    val exp = exponent.toString(10)
+                    mantissa + "e" + sign + exp
+                }
             }
         }
     }

@@ -148,15 +148,17 @@ class FlexNumber
                     else (numberToDisplay.exponent - 1).mod(3) + 1
             }
             val displayExponent = numberToDisplay.exponent - digitsBefore
-            val digitsToDisplay: Int = max(digitsBefore, min(numberToDisplay.digits.size, displayPrefs.maxDigits))
-            val digitsAfter = max(digitsToDisplay - digitsBefore, displayPrefs.maxLengthAfterPoint )
+            var digitsToDisplay: Int = max(digitsBefore, min(numberToDisplay.digits.size, displayPrefs.maxDigits))
+            val digitsAfter = min(digitsToDisplay - digitsBefore, displayPrefs.maxLengthAfterPoint )
+            digitsToDisplay = digitsAfter + digitsBefore
             val mantissa = NumberRendering.render(
                 numberToDisplay.isNegative,
                 numberToDisplay.base,
                 digitsToDisplay,
                 digitsAfter,
-                { getDigit(it + displayExponent) },
-                digitsAfter > 0
+                { numberToDisplay.getDigit(it + displayExponent) },
+                true,
+                displayPrefs
             )
             if (displayExponent == 0) {
                 return mantissa

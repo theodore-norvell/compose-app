@@ -1,5 +1,7 @@
 package model.data.value
 
+import model.data.DisplayPreferences
+
 object NumberRendering {
     private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: Char, excessAtStart : Boolean) {
         val wholeGroups = str.length / groupLength
@@ -24,26 +26,14 @@ object NumberRendering {
                 finalBuilder.append( str[it]) ; ++i } }
     }
 
-    fun render(
-        isNegative : Boolean,
-        base : Int,
-        length : Int,
-        lengthAfterPoint : Int,
-        getDigit: (Int)->Byte,
-        includeRadixPoint : Boolean = true
-    ) = render(isNegative, base, length, lengthAfterPoint, getDigit, includeRadixPoint, 3, 3,',', ' ', '.')
 
-    private fun render( isNegative : Boolean,
+    fun render( isNegative : Boolean,
                         base : Int,
                         length : Int,
                         lengthAfterPoint : Int,
                         getDigit: (Int)->Byte,
                         includeRadixPoint: Boolean,
-                        groupLengthBefore : Int,
-                        groupLengthAfter : Int,
-                        separatorBefore : Char,
-                        separatorAfter : Char,
-                        radixPoint : Char  )
+                        displayPrefs: DisplayPreferences  )
     : String {
 
         fun toChar( digit : Byte ) : Char {
@@ -64,14 +54,21 @@ object NumberRendering {
                 b.append('0')
             }
             // Transfer to the final builder in groups
-            separate( b.toString(), finalBuilder, groupLengthBefore, separatorBefore, true)
+            separate( b.toString(),
+                finalBuilder,
+                displayPrefs.groupLengthBefore,
+                displayPrefs.separatorBefore, true)
         }
         // Radix point
         if( includeRadixPoint) {
-            finalBuilder.append(radixPoint)
+            finalBuilder.append(displayPrefs.radixPoint)
                 val a = StringBuilder()
-                (1..lengthAfterPoint).forEach { a.append(getDigit(-it)) }
-                separate(a.toString(), finalBuilder, groupLengthAfter, separatorAfter, false)
+                (1..lengthAfterPoint).forEach { a.append(toChar(getDigit(-it))) }
+                separate(a.toString(),
+                    finalBuilder,
+                    displayPrefs.groupLengthAfter,
+                    displayPrefs.separatorAfter,
+                    false)
         }
 
         return finalBuilder.toString()

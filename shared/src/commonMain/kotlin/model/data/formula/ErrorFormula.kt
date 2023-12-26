@@ -5,7 +5,7 @@ import model.data.Environment
 
 data class ErrorFormula(val message : String, val formula : Formula ) : Formula() {
     override fun render(displayPrefs: DisplayPreferences): String {
-        return "Err[$message](${formula.render()})"
+        return "Err[$message](${formula.render(displayPrefs)})"
     }
 
     override fun expand(env: Environment): Formula {

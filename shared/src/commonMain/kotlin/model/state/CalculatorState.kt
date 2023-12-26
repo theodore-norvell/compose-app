@@ -14,7 +14,7 @@ enum class EntryState {
 }
 
 private val defaultBase = 10
-private val defaultDisplayMode = NumberDisplayMode.Scientific
+private val defaultDisplayMode = NumberDisplayMode.Auto
 
 data class CalculatorModes (
     val base : Int = defaultBase,
@@ -23,7 +23,7 @@ data class CalculatorModes (
 )
 
 data class CalculatorState(
-    val top : TopItem = NumberBuilder.openZero( defaultBase ),
+    val top : TopItem = NumberBuilder.zero( defaultBase ),
     val stack : List<Formula> = listOf(),
     val env : Environment = Environment(),
     val mode : CalculatorModes = CalculatorModes()
@@ -31,7 +31,9 @@ data class CalculatorState(
     private fun close(): CalculatorState =
         when (top) {
             is Formula -> this
-            is NumberBuilder -> copy(top = top.toFormula())
+            is NumberBuilder -> {
+                copy(top = top.toFormula())
+            }
         }
 
     private fun ensureAfterEnter() =
@@ -43,10 +45,9 @@ data class CalculatorState(
             is Formula -> {
                 val state0 = if (mode.entryState == EntryState.AFTER_ENTER) this else push(top)
                 val state1 = state0.ensureReady()
-                state1.copy(top = NumberBuilder.openZero(mode.base))
+                state1.copy(top = NumberBuilder.zero(mode.base))
             }
         }
-
 
     private fun ensureReady(): CalculatorState =
         close().run { copy(mode = mode.copy(entryState = EntryState.NORMAL)) }
@@ -56,11 +57,11 @@ data class CalculatorState(
             when (top) {
                 is Formula ->
                     this// Not actually possible
-                is NumberBuilder ->
+                is NumberBuilder -> {
                     if (top.canAppendDigit(mode.base, digit))
                         copy(top = top.appendDigit(mode.base, digit))
                     else
-                        this
+                        this }
             }
         }
 
@@ -68,7 +69,9 @@ data class CalculatorState(
         ensureOpen().run {
             when (top) {
                 is Formula -> this
-                is NumberBuilder -> copy(top = top.appendPoint())
+                is NumberBuilder -> {
+                    copy(top = top.appendPoint())
+                }
             }
         }
 
@@ -114,6 +117,9 @@ data class CalculatorState(
     fun setBase(newBase: Int): CalculatorState =
         ensureReady().run { copy(mode = mode.copy(base = newBase)) }
 
+    fun setDisplayMode(newMode: NumberDisplayMode): CalculatorState =
+        copy(mode = mode.copy(displayMode = newMode))
+
     fun mkBinOp(op: BinaryOperator): CalculatorState =
         ensureReady().run {
             val left = stackTop()
@@ -130,7 +136,7 @@ data class CalculatorState(
             push( VariableReference(name) )
         }
 
-    fun store(): CalculatorState =
+    fun store(emitError: (String) -> Unit): CalculatorState =
         ensureReady().run {
             val topAsVar = top.asVariable()
             if( topAsVar == null ) this
@@ -141,9 +147,11 @@ data class CalculatorState(
                 if( env.canPut( name, f )) {
                     copy( top = f, stack = stack.dropLast(1), env = env.put(name, f))
                 } else {
-                    // TODO emit error
+                    emitError( "Store Not Allowed")
                     this
                 }
             }
         }
+
+
 }

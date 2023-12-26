@@ -12,12 +12,11 @@ data class ComplexNumberValue  (
     override fun render(displayPrefs: DisplayPreferences): String {
         val rootMinus1 = "i"
         if( imaginaryPart.isZero() ) {
-            return realPart.render()
+            return realPart.render(displayPrefs)
         } else if( realPart.isZero()) {
-            return imaginaryPart.render() + " " + rootMinus1
+            return imaginaryPart.render(displayPrefs) + " " + rootMinus1
         } else {
-            return "($realPart.render(displayPrefs)) + " +
-                    "$imaginaryPart.render(displayPrefs)) $rootMinus1)"
+            return "(${realPart.render(displayPrefs)} + ${imaginaryPart.render(displayPrefs)} $rootMinus1)"
         }
     }
     override fun negate(): ComplexNumberValue = copy( realPart = realPart.negated(), imaginaryPart = imaginaryPart.negated())
