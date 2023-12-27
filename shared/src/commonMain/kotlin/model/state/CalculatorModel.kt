@@ -1,7 +1,6 @@
 package model.state
 
 import model.data.BinaryOperator
-import model.data.DisplayPreferences
 import model.data.NumberDisplayMode
 
 class CalculatorModel : Observable() {
@@ -9,10 +8,8 @@ class CalculatorModel : Observable() {
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
     private val errors : MutableList<String> = MutableList(0) { "" }
 
-    private var errorCounter = 0
     private fun emitError(message: String) {
-        errors.add( "$message $errorCounter" ) ;
-        errorCounter += 1
+        errors.add( "$message" )
         updateState(state)
     }
 
@@ -49,70 +46,11 @@ class CalculatorModel : Observable() {
         )
     }
 
-    fun top() = state.top
-    fun stack() = state.stack
-
-    private fun makeDisplayPreferences() : DisplayPreferences {
-        // Combine information from preferences and modes.
-        when( state.mode.base ) {
-            2 ->
-                return DisplayPreferences(
-                    base = state.mode.base,
-                    mode = state.mode.displayMode,
-                    maxDigits = 300,
-                    maxLengthAfterPoint = 20,
-                    groupLengthBefore = 4,
-                    groupLengthAfter = 4,
-                    separatorBefore = ' ',
-                    separatorAfter = ' ',
-                    radixPoint = '.'
-                )
-            7, 8 ->
-                return DisplayPreferences(
-                    base = state.mode.base,
-                    mode = state.mode.displayMode,
-                    maxDigits = 100,
-                    maxLengthAfterPoint = 20,
-                    groupLengthBefore = 3,
-                    groupLengthAfter = 3,
-                    separatorBefore = ' ',
-                    separatorAfter = ' ',
-                    radixPoint = '.'
-                )
-             16 ->
-                return DisplayPreferences(
-                    base = state.mode.base,
-                    mode = state.mode.displayMode,
-                    maxDigits = 100,
-                    maxLengthAfterPoint = 20,
-                    groupLengthBefore = 2,
-                    groupLengthAfter = 2,
-                    separatorBefore = ' ',
-                    separatorAfter = ' ',
-                    radixPoint = '.'
-                )
-            else ->
-                return DisplayPreferences(
-                    base = state.mode.base,
-                    mode = state.mode.displayMode,
-                    maxDigits = 100,
-                    maxLengthAfterPoint = 20,
-                    groupLengthBefore = 3,
-                    groupLengthAfter = 3,
-                    separatorBefore = ',',
-                    separatorAfter = ' ',
-                    radixPoint = '.'
-                )
-        }
-    }
-    fun renderTop() : String = state.top.render(makeDisplayPreferences())
-    fun renderStack() : List<String> =  stack().map{ it.render(makeDisplayPreferences()) }
+    fun renderTop() : String = state.renderTop({str -> emitError(str)})
+    fun renderStack() : List<String> =  state.renderStack({str -> emitError(str)})
 
 
-    fun renderEnv(): List<Pair<String, String>> {
-        val keys = env().keys().sortedBy {it}
-        return keys.map {Pair(it, env().get(it)!!.render(makeDisplayPreferences()))}
-    }
+    fun renderEnv(): List<Pair<String, String>> = state.renderEnv({str -> emitError(str)})
 
     fun env() = state.env
 
@@ -151,6 +89,9 @@ class CalculatorModel : Observable() {
 
     fun setDisplayMode( newMode : NumberDisplayMode) =
         updateState( state.setDisplayMode( newMode  ))
+
+    fun setEvalMode( newMode : EvalMode) =
+        updateState( state.setEvalMode( newMode  ))
 
     fun makeBinOp(op: BinaryOperator) = updateState( state.mkBinOp(op) )
     fun makeVarRef(name: String) = updateState( state.mkVarRef( name ))

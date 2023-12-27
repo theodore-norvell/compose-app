@@ -1,5 +1,6 @@
 package model.data.formula
 
+import model.data.ComputePreferences
 import model.data.DisplayPreferences
 import model.data.Environment
 import model.data.value.Value
@@ -13,7 +14,11 @@ data class ValueFormula(val value : Value) : Formula() { ///
         return this
     }
 
-    override fun evaluate(env: Environment): Formula {
+    override fun eval(
+        computePrefs: ComputePreferences,
+        env: Environment,
+        emitError: (String) -> Unit
+    ): Formula {
         return this
     }
 
@@ -21,7 +26,7 @@ data class ValueFormula(val value : Value) : Formula() { ///
         return emptySet()
     }
 
-    override fun asFloatNumber() : ValueFormula { return this }
+    override fun asValue() : Value = value
 
 
     override fun negate(): Formula = ValueFormula( value.negate() )

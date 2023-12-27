@@ -2,6 +2,7 @@ package model.data.formula
 
 import model.data.Environment
 import model.data.BinaryOperator
+import model.data.ComputePreferences
 import model.data.DisplayPreferences
 import model.data.applyBinaryOperator
 
@@ -22,11 +23,14 @@ data class BinaryOperation(val op : BinaryOperator, val left : Formula, val righ
         return BinaryOperation( op, left.expand(env), right.expand(env) )
     }
 
-    override fun evaluate(env: Environment): Formula {
-        val leftEvaluated = left.evaluate( env  )
-        val rightEvaluated = right.evaluate( env )
-        val evaluated = applyBinaryOperator( op, leftEvaluated, rightEvaluated)
-        return evaluated
+    override fun eval(
+        computePrefs: ComputePreferences,
+        env: Environment,
+        emitError: (String) -> Unit
+    ): Formula {
+        val leftEvaluated = left.eval(computePrefs, env, emitError)
+        val rightEvaluated = right.eval(computePrefs, env, emitError)
+        return applyBinaryOperator(op, leftEvaluated, rightEvaluated, computePrefs)
     }
 
     override fun freeVars(): Set<String> {

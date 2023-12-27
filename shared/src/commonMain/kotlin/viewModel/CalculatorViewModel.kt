@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import model.data.NumberDisplayMode
 import model.state.ButtonDescription
 import model.state.CalculatorModel
+import model.state.EvalMode
 
 data class UIState(
     val top : String,
@@ -17,13 +18,14 @@ data class UIState(
     val buttons : List<List<ButtonDescription>>,
     val base : String,
     val displayMode: String,
+    val evalMode: String,
     val error : String? = null,
 )
 
 class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewModel() {
     private val _uiState : MutableStateFlow<UIState>
         = MutableStateFlow(UIState( "", emptyList(), emptyList(), calculatorModel.buttons(), "",
-                                    displayMode = "", error = null))
+                                    displayMode = "", evalMode = "", error = null))
     val uiState : StateFlow<UIState> = _uiState.asStateFlow()
 
     init {
@@ -48,6 +50,7 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
                     envPairs = calculatorModel.renderEnv(),
                     base = calculatorModel.mode().base.toString(),
                     displayMode = calculatorModel.mode().displayMode.toString(),
+                    evalMode = calculatorModel.mode().evalMode.toString(),
                     error = calculatorModel.nextError() )
             }
         }
@@ -60,6 +63,7 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
     fun setBase( newBase: Int ) = calculatorModel.setBase( newBase )
 
     fun setDisplayMode( newMode : NumberDisplayMode ) = calculatorModel.setDisplayMode( newMode )
+    fun setEvalMode( newMode : EvalMode) = calculatorModel.setEvalMode( newMode )
 
     fun makeVarRef(name: String) = calculatorModel.makeVarRef( name )
 }

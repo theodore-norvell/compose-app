@@ -12,7 +12,7 @@ fun applyUnaryOperator(op : UnaryOperator,right : Formula) : Formula {
         // No errors
         else -> {
             // If both operands can beå  converted to floating point, do so
-            val r = right.asFloatNumber()
+            val r = right.asValue()
             when {
                 r == null -> {
                     // If one or the other can not be reduced to floating point,

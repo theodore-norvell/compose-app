@@ -10,8 +10,6 @@ class Environment( private val map : Map<String, Formula> = HashMap() ) {
     // and x(0) in map[x(n)].freeVars().
     // For example there is no string x such that x in map[x].freeVars().
 
-
-
     fun keys() : List<String> = map.keys.toList()
 
     fun has( varName : String ) : Boolean {

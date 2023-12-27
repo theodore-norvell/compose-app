@@ -2,6 +2,7 @@ package model.data.formula
 
 import model.data.ComputePreferences
 import model.data.DisplayPreferences
+import model.data.Environment
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
 import model.data.value.NumberRendering
@@ -168,6 +169,12 @@ class NumberBuilder private constructor (
         val value = ComplexNumberValue(real, imaginary)
         return ValueFormula(value)
     }
+
+    override fun eval(
+        computePrefers: ComputePreferences,
+        env: Environment,
+        emitError: (String) -> Unit
+    ): TopItem = this
 
     private fun copy(numberEntryState : NumberEntryState = this.numberEntryState,
                      isNegative: Boolean = this.isNegative,

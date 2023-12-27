@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import model.data.NumberDisplayMode
 import model.state.ButtonDescription
 import model.state.CalculatorModel
+import model.state.EvalMode
 import viewModel.UIState
 import viewModel.CalculatorViewModel
 
@@ -86,13 +87,19 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                     Text("∀A")
                 },
                 actions =  {
+                    // Eval mode picker
+                    DropDownPicker( uiState.evalMode,
+                        { viewModel.setEvalMode( it ) },
+                        listOf( PickerOption( EvalMode.VALUE.toString(), EvalMode.VALUE),
+                            PickerOption( EvalMode.FORMULA.toString(), EvalMode.FORMULA))
+                    )
                     // Display mode Picker.
                     DropDownPicker( uiState.displayMode,
                         { viewModel.setDisplayMode( it ) },
-                        listOf( PickerOption( "Auto", NumberDisplayMode.Auto),
-                            PickerOption( "Eng", NumberDisplayMode.Engineering),
-                            PickerOption( "Sci", NumberDisplayMode.Scientific),
-                            PickerOption( "Int", NumberDisplayMode.NoExponent))
+                        listOf( PickerOption( NumberDisplayMode.Auto.toString(), NumberDisplayMode.Auto),
+                            PickerOption( NumberDisplayMode.Engineering.toString(), NumberDisplayMode.Engineering),
+                            PickerOption( NumberDisplayMode.Scientific.toString(), NumberDisplayMode.Scientific),
+                            PickerOption( NumberDisplayMode.NoExponent.toString(), NumberDisplayMode.NoExponent))
                     )
                     // Base Picker.
                     DropDownPicker( uiState.base,

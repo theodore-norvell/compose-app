@@ -1,5 +1,6 @@
 package model.data.formula
 
+import model.data.ComputePreferences
 import model.data.DisplayPreferences
 import model.data.Environment
 import model.data.UnaryOperator
@@ -20,10 +21,13 @@ data class UnaryOperation(val op : UnaryOperator, val right : Formula) : Formula
         return UnaryOperation( op, right.expand(env) )
     }
 
-    override fun evaluate(env: Environment): Formula {
-        val rightEvaluated = right.evaluate( env )
-        val evaluated = applyUnaryOperator( op, rightEvaluated)
-        return evaluated
+    override fun eval(
+        computePrefs: ComputePreferences,
+        env: Environment,
+        emitError: (String) -> Unit
+    ): Formula {
+        val rightEvaluated = right.eval(computePrefs, env, emitError)
+        return applyUnaryOperator(op, rightEvaluated)
     }
 
     override fun freeVars(): Set<String> {
