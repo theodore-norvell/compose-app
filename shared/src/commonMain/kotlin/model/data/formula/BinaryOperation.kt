@@ -2,12 +2,11 @@ package model.data.formula
 
 import model.data.Environment
 import model.data.BinaryOperator
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.applyBinaryOperator
 
 data class BinaryOperation(val op : BinaryOperator, val left : Formula, val right : Formula) : Formula() {
-    override fun render(displayPrefs: DisplayPreferences): String {
+    override fun render(displayPrefs: DisplayAndComputePreferences): String {
         // TODO Eventually something more complex than a string will be needed
         // Or perhaps return a string in a latex subset language and leave
         // the rendering to boxes to a layer closer to the graphics.
@@ -24,13 +23,13 @@ data class BinaryOperation(val op : BinaryOperator, val left : Formula, val righ
     }
 
     override fun eval(
-        computePrefs: ComputePreferences,
+        prefs : DisplayAndComputePreferences,
         env: Environment,
         emitError: (String) -> Unit
     ): Formula {
-        val leftEvaluated = left.eval(computePrefs, env, emitError)
-        val rightEvaluated = right.eval(computePrefs, env, emitError)
-        return applyBinaryOperator(op, leftEvaluated, rightEvaluated, computePrefs)
+        val leftEvaluated = left.eval(prefs, env, emitError)
+        val rightEvaluated = right.eval(prefs, env, emitError)
+        return applyBinaryOperator(op, leftEvaluated, rightEvaluated, prefs)
     }
 
     override fun freeVars(): Set<String> {

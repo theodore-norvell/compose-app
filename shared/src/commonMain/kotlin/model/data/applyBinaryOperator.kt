@@ -1,13 +1,14 @@
 package model.data
 
 import model.data.formula.BinaryOperation
+import model.data.formula.ErrorFormula
 import model.data.formula.Formula
 import model.data.formula.ValueFormula
 
 fun applyBinaryOperator(op : BinaryOperator,
                         left : Formula,
                         right : Formula,
-                        computePrefs : ComputePreferences)
+                        prefs : DisplayAndComputePreferences)
 : Formula {
     // TODO This is going to need some thought. For now, just something simple.
     // Propagate errors
@@ -26,20 +27,32 @@ fun applyBinaryOperator(op : BinaryOperator,
             // Apply the operator.
             when (op) {
                 BinaryOperator.ADD ->
-                    when( val resultValue =  r.add(l, computePrefs ) ) {
-                        // TODO. Why would this be null
-                        null -> return default
+                    when( val resultValue =  r.add(l, prefs ) ) {
+                        // null indicates failure
+                        null -> return ErrorFormula("incompatible operands", default)
                         else -> return ValueFormula( resultValue )
                     }
 
                 BinaryOperator.DIVIDE ->
-                    return TODO()
+                    when( val resultValue =  r.divide(l, prefs ) ) {
+                        // null indicates failure
+                        null -> return ErrorFormula("incompatible operands", default)
+                        else -> return ValueFormula( resultValue )
+                    }
 
                 BinaryOperator.MULTIPLY ->
-                    return TODO()
+                    when( val resultValue =  r.multiply(l, prefs ) ) {
+                        // null indicates failure
+                        null -> return ErrorFormula("incompatible operands", default)
+                        else -> return ValueFormula( resultValue )
+                    }
 
                 BinaryOperator.SUBTRACT ->
-                    return TODO()
+                    when( val resultValue =  r.subtract(l, prefs ) ) {
+                        // null indicates failure
+                        null -> return ErrorFormula("incompatible operands", default)
+                        else -> return ValueFormula( resultValue )
+                    }
 
             }
         }

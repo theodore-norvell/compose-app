@@ -1,12 +1,11 @@
 package model.data.formula
 
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.value.Value
 
 data class ValueFormula(val value : Value) : Formula() { ///
-    override fun render(displayPrefs: DisplayPreferences): String {
+    override fun render(displayPrefs: DisplayAndComputePreferences): String {
         return value.render(displayPrefs)
     }
 
@@ -15,7 +14,7 @@ data class ValueFormula(val value : Value) : Formula() { ///
     }
 
     override fun eval(
-        computePrefs: ComputePreferences,
+        prefs : DisplayAndComputePreferences,
         env: Environment,
         emitError: (String) -> Unit
     ): Formula {
@@ -27,7 +26,4 @@ data class ValueFormula(val value : Value) : Formula() { ///
     }
 
     override fun asValue() : Value = value
-
-
-    override fun negate(): Formula = ValueFormula( value.negate() )
 }

@@ -1,7 +1,6 @@
 package model.data.formula
 
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
@@ -34,12 +33,12 @@ class NumberBuilder private constructor (
         }
     }
 
-    fun convertBaseTo( base : Int ) : NumberBuilder {
+    fun convertBaseTo( base : Int, prefs: DisplayAndComputePreferences ) : NumberBuilder {
         if( base == this.base ) return this
         else {
             val number =  FlexNumber.create(isNegative, this.base, lengthAfterPoint, digits, exponent*exponentSign)
             // TODO Change 1024 to computePrefs.size
-            val inNewBase = number.convertedToBase(base,1024 )
+            val inNewBase = number.convertedToBase( prefs )
             val newDigits = inNewBase.digits
             val newLengthAfterPoint = newDigits.size - inNewBase.exponent
             when (numberEntryState) {
@@ -112,9 +111,9 @@ class NumberBuilder private constructor (
         return if( i >= digits.size) 0 else if( i < 0 ) 0 else digits[i]
     }
 
-    override fun render(displayPrefs: DisplayPreferences): String {
+    override fun render(displayPrefs: DisplayAndComputePreferences): String {
         if( displayPrefs.base != this.base ) {
-            return this.convertBaseTo(displayPrefs.base).render(displayPrefs)
+            return this.convertBaseTo(displayPrefs.base, displayPrefs).render(displayPrefs)
         } else {
             val length = digits.size
             return when (numberEntryState) {
@@ -171,7 +170,7 @@ class NumberBuilder private constructor (
     }
 
     override fun eval(
-        computePrefers: ComputePreferences,
+        prefs : DisplayAndComputePreferences,
         env: Environment,
         emitError: (String) -> Unit
     ): TopItem = this

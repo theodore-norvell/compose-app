@@ -1,33 +1,28 @@
 package model.data
 
 
+import model.data.formula.ErrorFormula
 import model.data.formula.Formula
 import model.data.formula.UnaryOperation
+import model.data.formula.ValueFormula
 
-fun applyUnaryOperator(op : UnaryOperator,right : Formula) : Formula {
-    // TODO This is going to need some thought. For now, just something simple.
-    // Propagate errors
-    when (right.asError()) {
-        null -> return right
-        // No errors
+fun applyUnaryOperator(op : UnaryOperator,right : Formula,
+                       prefs : DisplayAndComputePreferences,) : Formula {
+
+    val default = UnaryOperation(op, right)
+    when(val r = right.asValue()) {
+        null -> {
+            return default
+        }
         else -> {
-            // If both operands can beå  converted to floating point, do so
-            val r = right.asValue()
-            when {
-                r == null -> {
-                    // If one or the other can not be reduced to floating point,
-                    // return the formula as simplified as possible.
-
-                    return UnaryOperation(op, right)
-                }
-                else -> {
-                    // Both can be treated as floating point.
-                    // Apply the operator.
-                    when (op) {
-                        UnaryOperator.NEGATE ->
-                            return TODO()
+            // Both can be treated as floating point.
+            // Apply the operator.
+            when (op) {
+                UnaryOperator.NEGATE ->
+                    return when( val resultValue = r.negate() ) {
+                        null -> ErrorFormula( "Operand not negatable", default)
+                        else -> ValueFormula(resultValue)
                     }
-                }
             }
         }
     }

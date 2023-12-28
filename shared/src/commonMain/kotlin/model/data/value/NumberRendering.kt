@@ -1,6 +1,6 @@
 package model.data.value
 
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 
 object NumberRendering {
     private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: Char, excessAtStart : Boolean) {
@@ -33,7 +33,7 @@ object NumberRendering {
                         lengthAfterPoint : Int,
                         getDigit: (Int)->Byte,
                         includeRadixPoint: Boolean,
-                        displayPrefs: DisplayPreferences  )
+                        displayPrefs: DisplayAndComputePreferences  )
     : String {
 
         fun toChar( digit : Byte ) : Char {

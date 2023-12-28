@@ -1,7 +1,6 @@
 package model.data.value
 
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.NumberDisplayMode
 import kotlin.math.max
 import kotlin.math.min
@@ -14,12 +13,14 @@ import kotlin.math.min
 
 sealed class ANumber {
 
-    abstract fun render(displayPrefs: DisplayPreferences) : String
+    abstract fun render(displayPrefs: DisplayAndComputePreferences) : String
 
     abstract fun isZero() : Boolean
     abstract fun negated() : ANumber
 
-    abstract fun add( other : ANumber, computePrefs : ComputePreferences) : ANumber
+    abstract fun times( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+
+    abstract fun add( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
 }
 sealed class AFixedOrFlexibleNumber constructor(
                                                 val isNegative : Boolean,
@@ -127,29 +128,29 @@ class FlexNumber
         return copy( isNegative = !isNegative )
     }
 
-    override fun render(displayPrefs: DisplayPreferences): String {
+    override fun render(prefs: DisplayAndComputePreferences): String {
         // TODO eliminate magic number 1024
-        val numberToDisplay = this.convertedToBase( displayPrefs.base, 1024 )
+        val numberToDisplay = this.convertedToBase( prefs )
         val digitsBefore: Int =
-            when( displayPrefs.mode ) {
+            when( prefs.mode ) {
                 NumberDisplayMode.Engineering ->
                     (numberToDisplay.exponent - 1).mod(3) + 1
                 NumberDisplayMode.Scientific -> 1
                 NumberDisplayMode.NoExponent ->
                     if( numberToDisplay.exponent < 0 )
                         0
-                    else if( numberToDisplay.exponent <= displayPrefs.maxDigits )
+                    else if( numberToDisplay.exponent <= prefs.maxDigits )
                         numberToDisplay.exponent
                     else
-                        displayPrefs.maxDigits
+                        prefs.maxDigits
                 NumberDisplayMode.Auto ->
                     if( numberToDisplay.exponent in 0..<10 ) numberToDisplay.exponent
                     else if(numberToDisplay.exponent in (-3)..<0 ) 0
                     else (numberToDisplay.exponent - 1).mod(3) + 1
             }
             val displayExponent = numberToDisplay.exponent - digitsBefore
-            var digitsToDisplay: Int = max(digitsBefore, min(numberToDisplay.digits.size, displayPrefs.maxDigits))
-            val digitsAfter = min(digitsToDisplay - digitsBefore, displayPrefs.maxLengthAfterPoint )
+            var digitsToDisplay: Int = max(digitsBefore, min(numberToDisplay.digits.size, prefs.maxDigits))
+            val digitsAfter = min(digitsToDisplay - digitsBefore, prefs.maxLengthAfterPoint )
             digitsToDisplay = digitsAfter + digitsBefore
             val mantissa = NumberRendering.render(
                 numberToDisplay.isNegative,
@@ -158,7 +159,7 @@ class FlexNumber
                 digitsAfter,
                 { numberToDisplay.getDigit(it + displayExponent) },
                 true,
-                displayPrefs
+                prefs
             )
             if (displayExponent == 0) {
                 return mantissa
@@ -166,7 +167,7 @@ class FlexNumber
                 val expPart = displayExponent.toString()
                 return mantissa + "e" + expPart
             }
-}
+    }
 
     private fun copy(isNegative: Boolean = this.isNegative,
                      base : Int = this.base,
@@ -268,18 +269,58 @@ class FlexNumber
         return copy( digits = newDigits.toList(), exponent = newExp )
     }
 
+    override fun times( q : ANumber, prefs: DisplayAndComputePreferences ) : ANumber {
+        when (q) {
+            is FlexNumber -> {
+                val a = this.convertedToBase(prefs)
+                val aSize = a.digits.size
+                val b = q.convertedToBase(prefs)
+                val bSize = b.digits.size
+                val newDigitsInt = MutableList<Int>(aSize + bSize) { 0 }
+                for (i in 0..<aSize) {
+                    for (j in 0..<bSize) {
+                        val d = a.digits[i].toInt() * b.digits[j].toInt()
+                        newDigitsInt[i + j] += d
+                    }
+                }
+                var carry = 0
+                for( k in (0 ..< newDigitsInt.size) ) {
+                    val q = (newDigitsInt[k] + carry) % prefs.base
+                    carry = (newDigitsInt[k] + carry) / prefs.base
+                    newDigitsInt[k] = q
+                }
+                check( carry == 0 )
+                val newDigitsSize = min( prefs.sizeLimit, newDigitsInt.size )
+                val shift = max(0, newDigitsInt.size - newDigitsSize)
+                val newDigits = MutableList<Byte>( newDigitsSize ) { 0 }
+                for( k in 0 ..< newDigitsSize )
+                    newDigits[k] = newDigitsInt[k+shift].toByte()
+                val newIsNegative = a.isNegative != b.isNegative
+                val newExponent = a.exponent + b.exponent
+                return FlexNumber.create(newIsNegative,
+                    prefs.base,
+                    newDigitsSize,
+                    newDigits,
+                    newExponent )
+            }
+        }
+    }
+
+
     fun isAnInteger() = digits.size <= exponent
 
     fun digitsBeforePoint() = exponent
 
     fun digitsAfterPoint() = max(0,digits.size-exponent)
 
-    fun convertedToBase(b : Int, size : Int ) : FlexNumber {
+    fun convertedToBase( prefs: DisplayAndComputePreferences) : FlexNumber {
+        val b = prefs.base
+        val size = prefs.sizeLimit
         if( b == base ) {
             // Todo. Limit the result size.
             return this
         } else if( isNegative ) {
-            val negResult = this.negated().convertedToBase( b, size)
+            val negResult = this.negated().convertedToBase( prefs )
             return negResult.negated()
         } else {
             // First ensure that n is an integer equal to this.base^k * this number for some non-negative k
@@ -315,10 +356,12 @@ class FlexNumber
         }
     }
 
-    fun add(other : FlexNumber, base : Int, size : Int ) : FlexNumber {
-        val x = other.convertedToBase(base, size)
-        val y = this.convertedToBase( base, size )
-        val digitsAfterPoint : Int = min( x.digitsAfterPoint(), y.digitsAfterPoint())
+    fun add(other : FlexNumber, prefs: DisplayAndComputePreferences ) : ANumber {
+        val base = prefs.base
+        val sizeLimit = prefs.sizeLimit
+        val x = other.convertedToBase( prefs)
+        val y = this.convertedToBase( prefs )
+        val digitsAfterPoint : Int = max( x.digitsAfterPoint(), y.digitsAfterPoint())
         val inputDigitsBeforePoint : Int = max( x.digitsBeforePoint(), y.digitsBeforePoint() )
         val mX = if( x.isNegative ) -1 else 1
         val mY = if( y.isNegative ) -1 else 1
@@ -376,9 +419,9 @@ class FlexNumber
 
 
 
-    override fun add(other: ANumber, computePrefs: ComputePreferences) : ANumber {
+    override fun add(other: ANumber, prefs: DisplayAndComputePreferences) : ANumber {
         when( other ) {
-            is FlexNumber -> return this.add( other, computePrefs.base, computePrefs.size )
+            is FlexNumber -> return this.add( other, prefs )
         }
     }
 }

@@ -1,18 +1,16 @@
 package model.data.formula
 
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.UnaryOperator
 import model.data.applyUnaryOperator
 
 data class UnaryOperation(val op : UnaryOperator, val right : Formula) : Formula() {
-    override fun render(displayPrefs: DisplayPreferences): String {
+    override fun render(displayPrefs: DisplayAndComputePreferences): String {
         // TODO Eventually something more complex than a string will be needed
         // Or perhaps return a string in a latex subset language and leave
         // the rendering to boxes to a layer closer to the graphics.
         var r = right.render(displayPrefs)
-        // TODO worry about left associative and non-associative operators
         if( op.precedence() < right.precedence()) r = "($r)"
         return "$op$r"
     }
@@ -22,12 +20,12 @@ data class UnaryOperation(val op : UnaryOperator, val right : Formula) : Formula
     }
 
     override fun eval(
-        computePrefs: ComputePreferences,
+        prefs : DisplayAndComputePreferences,
         env: Environment,
         emitError: (String) -> Unit
     ): Formula {
-        val rightEvaluated = right.eval(computePrefs, env, emitError)
-        return applyUnaryOperator(op, rightEvaluated)
+        val rightEvaluated = right.eval(prefs, env, emitError)
+        return applyUnaryOperator(op, rightEvaluated, prefs)
     }
 
     override fun freeVars(): Set<String> {

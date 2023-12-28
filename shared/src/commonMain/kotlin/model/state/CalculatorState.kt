@@ -1,8 +1,7 @@
 package model.state
 
 import model.data.BinaryOperator
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.NumberDisplayMode
 import model.data.formula.BinaryOperation
@@ -42,15 +41,11 @@ data class CalculatorState(
     val mode : CalculatorModes = CalculatorModes()
 ) {
 
-    private fun makeComputePrefs() : ComputePreferences =
-        // Todo replace magic number
-        ComputePreferences(mode.base, 255)
-
-    private fun makeDisplayPreferences() : DisplayPreferences {
+    private fun makeDisplayAndComputePreferences() : DisplayAndComputePreferences {
         // Combine information from preferences and modes.
         when( mode.base ) {
             2 ->
-                return DisplayPreferences(
+                return DisplayAndComputePreferences(
                     base = mode.base,
                     mode = mode.displayMode,
                     maxDigits = 300,
@@ -59,10 +54,11 @@ data class CalculatorState(
                     groupLengthAfter = 4,
                     separatorBefore = ' ',
                     separatorAfter = ' ',
-                    radixPoint = '.'
+                    radixPoint = '.',
+                    sizeLimit = 255
                 )
             7, 8 ->
-                return DisplayPreferences(
+                return DisplayAndComputePreferences(
                     base = mode.base,
                     mode = mode.displayMode,
                     maxDigits = 100,
@@ -71,10 +67,11 @@ data class CalculatorState(
                     groupLengthAfter = 3,
                     separatorBefore = ' ',
                     separatorAfter = ' ',
-                    radixPoint = '.'
+                    radixPoint = '.',
+                    sizeLimit = 255
                 )
             16 ->
-                return DisplayPreferences(
+                return DisplayAndComputePreferences(
                     base = mode.base,
                     mode = mode.displayMode,
                     maxDigits = 100,
@@ -83,10 +80,11 @@ data class CalculatorState(
                     groupLengthAfter = 2,
                     separatorBefore = ' ',
                     separatorAfter = ' ',
-                    radixPoint = '.'
+                    radixPoint = '.',
+                    sizeLimit = 255
                 )
             else ->
-                return DisplayPreferences(
+                return DisplayAndComputePreferences(
                     base = mode.base,
                     mode = mode.displayMode,
                     maxDigits = 100,
@@ -95,35 +93,33 @@ data class CalculatorState(
                     groupLengthAfter = 3,
                     separatorBefore = ',',
                     separatorAfter = ' ',
-                    radixPoint = '.'
+                    radixPoint = '.',
+                    sizeLimit = 255
                 )
         }
     }
 
     fun renderTop( emitError: (String) -> Unit) : String {
-        val prefs = makeDisplayPreferences()
-        val computePrefs = makeComputePrefs()
+        val prefs = makeDisplayAndComputePreferences()
         val toRender = when( mode.evalMode) {
-            EvalMode.VALUE -> top.eval(computePrefs, env, emitError)
+            EvalMode.VALUE -> top.eval(prefs, env, emitError)
             EvalMode.FORMULA -> top
         }
         return toRender.render( prefs )
     }
     fun renderStack(emitError: (String) -> Unit) : List<String> {
-        val prefs = makeDisplayPreferences()
-        val computePrefs = makeComputePrefs()
+        val prefs = makeDisplayAndComputePreferences()
         when( mode.evalMode ) {
-            EvalMode.VALUE -> return stack.map{ it.eval(computePrefs, env, emitError).render(prefs) }
+            EvalMode.VALUE -> return stack.map{ it.eval(prefs, env, emitError).render(prefs) }
             EvalMode.FORMULA -> return stack.map{ it.render(prefs) }
         }
     }
 
     fun renderEnv(emitError: (String) -> Unit): List<Pair<String, String>> {
-        val prefs = makeDisplayPreferences()
-        val computePrefs = makeComputePrefs()
+        val prefs = makeDisplayAndComputePreferences()
         val keys = env.keys().sortedBy {it}
         val toRender = when( mode.evalMode) {
-            EvalMode.VALUE ->  keys.map {Pair(it, env.get(it)!!.eval(computePrefs,env, emitError)) }
+            EvalMode.VALUE ->  keys.map {Pair(it, env.get(it)!!.eval(prefs,env, emitError)) }
             EvalMode.FORMULA -> keys.map {Pair(it, env.get(it)!!)}
         }
         return toRender.map {Pair(it.first, it.second.render(prefs))}

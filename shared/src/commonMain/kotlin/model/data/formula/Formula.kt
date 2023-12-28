@@ -1,7 +1,6 @@
 package model.data.formula
 
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.UnaryOperator
 import model.data.value.Value
@@ -11,12 +10,12 @@ abstract class Formula : TopItem() {
     override fun asNumberBuilder() : NumberBuilder? = null
 
     override fun toFormula() : Formula = this
-    abstract override fun render(displayPrefs: DisplayPreferences): String
+    abstract override fun render(displayPrefs: DisplayAndComputePreferences): String
 
     abstract fun expand( env : Environment) : Formula
 
     abstract override fun eval(
-        computePrefs: ComputePreferences,
+        prefs : DisplayAndComputePreferences,
         env: Environment,
         emitError: (String) -> Unit
     ) : Formula

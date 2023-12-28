@@ -1,11 +1,10 @@
 package model.data.formula
 
-import model.data.ComputePreferences
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 
 data class ErrorFormula(val message : String, val formula : Formula ) : Formula() {
-    override fun render(displayPrefs: DisplayPreferences): String {
+    override fun render(displayPrefs: DisplayAndComputePreferences): String {
         return "Err[$message](${formula.render(displayPrefs)})"
     }
 
@@ -14,7 +13,7 @@ data class ErrorFormula(val message : String, val formula : Formula ) : Formula(
     }
 
     override fun eval(
-        computePrefs: ComputePreferences,
+        prefs : DisplayAndComputePreferences,
         env: Environment,
         emitError: (String) -> Unit
     ): Formula {

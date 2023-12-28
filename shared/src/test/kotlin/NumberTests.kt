@@ -1,4 +1,4 @@
-import model.data.DisplayPreferences
+import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.NumberDisplayMode
 import model.data.formula.NumberBuilder
@@ -7,7 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NumberTests {
-    private val prefs = DisplayPreferences(
+    private val prefs = DisplayAndComputePreferences(
         base = 10,
         mode = NumberDisplayMode.Auto,
         maxDigits = 10,
@@ -178,7 +178,7 @@ class NumberTests {
     }
 
     @Test fun renderNoZerosAtFront() {
-        val base16Prefs = DisplayPreferences(
+        val base16Prefs = DisplayAndComputePreferences(
             base = 16,
             mode = NumberDisplayMode.NoExponent,
             maxDigits = 100,
@@ -189,7 +189,7 @@ class NumberTests {
             separatorAfter = ' ',
             radixPoint = '.'
         )
-        val base10Prefs = DisplayPreferences(
+        val base10Prefs = DisplayAndComputePreferences(
             base = 10,
             mode = NumberDisplayMode.NoExponent,
             maxDigits = 100,
