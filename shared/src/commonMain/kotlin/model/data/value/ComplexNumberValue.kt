@@ -13,7 +13,10 @@ data class ComplexNumberValue  (
         if( imaginaryPart.isZero() ) {
             return realPart.render(displayPrefs)
         } else if( realPart.isZero()) {
-            return imaginaryPart.render(displayPrefs) + " " + rootMinus1
+            if( imaginaryPart.isOne() )
+                return rootMinus1
+            else
+                return imaginaryPart.render(displayPrefs) + " " + rootMinus1
         } else {
             return "(${realPart.render(displayPrefs)} + ${imaginaryPart.render(displayPrefs)} $rootMinus1)"
         }

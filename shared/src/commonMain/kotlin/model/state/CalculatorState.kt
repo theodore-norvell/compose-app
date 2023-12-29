@@ -8,7 +8,10 @@ import model.data.formula.BinaryOperation
 import model.data.formula.Formula
 import model.data.formula.NumberBuilder
 import model.data.formula.TopItem
+import model.data.formula.ValueFormula
 import model.data.formula.VariableReference
+import model.data.value.ComplexNumberValue
+import model.data.value.FlexNumber
 
 enum class EntryState {
     NORMAL, AFTER_ENTER
@@ -102,7 +105,12 @@ data class CalculatorState(
     fun renderTop( emitError: (String) -> Unit) : String {
         val prefs = makeDisplayAndComputePreferences()
         val toRender = when( mode.evalMode) {
-            EvalMode.VALUE -> top.eval(prefs, env, emitError)
+            EvalMode.VALUE ->
+                when( top ) {
+                    // Suppress evaluation of variables when they are on top.
+                    is VariableReference -> top
+                    else -> top.eval(prefs, env, emitError)
+                }
             EvalMode.FORMULA -> top
         }
         return toRender.render( prefs )
@@ -181,17 +189,19 @@ data class CalculatorState(
             }
         }
 
-    fun enter() =
-        when (top) {
-            is Formula -> push(top).run { ensureAfterEnter() }
-            is NumberBuilder -> push(top.toFormula()).run { ensureAfterEnter() }
-        }
+    fun enter() : CalculatorState {
+        val f1 = top.toFormula()
+        return copy(top = f1, stack = stack + f1).ensureAfterEnter()
+    }
 
     //close().run{ push(top )}.run{ ensureAfterEnter() }
 
     private fun push(item: TopItem): CalculatorState {
         val f1 = top.toFormula()
-        return ensureReady().copy(top = item, stack = stack + f1)
+        when( mode.entryState ) {
+            EntryState.NORMAL -> return ensureReady().copy(top = item, stack = stack + f1)
+            EntryState.AFTER_ENTER ->  return ensureReady().copy(top = item)
+        }
     }
 
     fun swap() =
@@ -233,9 +243,7 @@ data class CalculatorState(
         }
 
     fun mkVarRef(name: String): CalculatorState =
-        ensureReady().run{
             push( VariableReference(name) )
-        }
 
     fun store(emitError: (String) -> Unit): CalculatorState =
         ensureReady().run {
@@ -254,5 +262,43 @@ data class CalculatorState(
             }
         }
 
+    fun eval(emitError: (String) -> Unit): CalculatorState =
+        ensureReady().run {
+            val evaluated = top.eval( makeDisplayAndComputePreferences(), env, emitError )
+            copy( top = evaluated )
+        }
+
+    fun clear(): CalculatorState {
+        val newTop = when (top) {
+            is NumberBuilder -> NumberBuilder.zero( mode.base )
+            is Formula -> top
+        }
+        return copy(top = newTop )
+    }
+
+    fun imaginary(): CalculatorState =
+        when( top ) {
+            is NumberBuilder -> {
+                // Might want to avoid this if the Number builder is
+                // completely fresh.
+                copy(top = top.imaginary())
+            }
+            is Formula -> {
+                val zero = FlexNumber.mkZero( mode.base )
+                val one = FlexNumber.mkOne( mode.base )
+                val newTop = ValueFormula( ComplexNumberValue(zero,one))
+                push( newTop )
+            }
+        }
+
+
+    fun drop(): CalculatorState =
+        run {
+            val newTop = stackTop()
+            if( newTop == null ) copy( top = NumberBuilder.zero(mode.base) )
+            else {
+                copy( top = newTop, stack = popStack() )
+            }
+        }
 
 }

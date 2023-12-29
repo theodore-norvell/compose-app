@@ -16,6 +16,7 @@ sealed class ANumber {
     abstract fun render(displayPrefs: DisplayAndComputePreferences) : String
 
     abstract fun isZero() : Boolean
+    abstract fun isOne() : Boolean
     abstract fun negated() : ANumber
 
     abstract fun convertedToBase( prefs: DisplayAndComputePreferences) : ANumber
@@ -61,6 +62,9 @@ sealed class AFixedOrFlexibleNumber constructor(
     }
 
     override fun isZero() : Boolean = digits.isEmpty()
+
+    override fun isOne() : Boolean
+        = digits.size == 1 && digits[0].toInt() == 1 && exponent == 1 && ! isNegative
 
     override fun hashCode(): Int {
         val a = if(isNegative) 13 else 11
@@ -134,6 +138,8 @@ class FlexNumber
         }
 
         fun mkZero(base: Int): FlexNumber = create(false, base, 0, emptyList(), 0)
+
+        fun mkOne(base: Int): FlexNumber = create(false, base, 0, listOf(1), 0)
     }
 
     override fun negated() : FlexNumber {

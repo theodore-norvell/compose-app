@@ -13,7 +13,8 @@ class NumberBuilder private constructor (
     val lengthAfterPoint : Int,
     val digits : List<Byte>,
     val exponent : Int,
-    val exponentSign: Int )
+    val exponentSign: Int,
+    val isImaginary: Boolean = false )
 : TopItem()
 // NB can't be data class as it has a private constructor
 {
@@ -116,7 +117,7 @@ class NumberBuilder private constructor (
             return this.convertBaseTo(displayPrefs.base, displayPrefs).render(displayPrefs)
         } else {
             val length = digits.size
-            return when (numberEntryState) {
+            val realString = when (numberEntryState) {
                 NumberEntryState.BEFORE_POINT ->
                     NumberRendering.render(
                         isNegative,
@@ -154,18 +155,22 @@ class NumberBuilder private constructor (
                     mantissa + "e" + sign + exp
                 }
             }
+            if( isImaginary ) return realString + "i" else return realString
         }
     }
 
-    fun toValue() : FlexNumber
+    fun imaginary() : NumberBuilder
+        = copy( isImaginary = ! isImaginary)
+
+    fun toFlexNumber() : FlexNumber
         = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
 
     override fun toFormula(): Formula {
         // This always makes a FlexNumber.  We might want to make other kinds of numbers
         // depending on the mode.
-        val real = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
-        val imaginary = FlexNumber.mkZero(base)
-        val value = ComplexNumberValue(real, imaginary)
+        val a = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
+        val b = FlexNumber.mkZero(base)
+        val value = if(isImaginary) ComplexNumberValue(b,a) else ComplexNumberValue(a, b)
         return ValueFormula(value)
     }
 
@@ -181,7 +186,8 @@ class NumberBuilder private constructor (
                      lengthAfterPoint : Int = this.lengthAfterPoint,
                      digits : List<Byte> = this. digits,
                      exponent : Int = this.exponent,
-                     exponentSign : Int = this.exponentSign
+                     exponentSign : Int = this.exponentSign,
+                     isImaginary : Boolean = this.isImaginary
     ) = NumberBuilder(
         numberEntryState,
         isNegative,
@@ -189,7 +195,8 @@ class NumberBuilder private constructor (
         lengthAfterPoint,
         digits,
         exponent,
-        exponentSign)
+        exponentSign,
+        isImaginary)
 
 
 

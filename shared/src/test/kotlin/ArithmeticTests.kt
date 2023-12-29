@@ -28,7 +28,7 @@ class ArithmeticTests {
             digitList += (todo % base).toByte()
             todo = todo / base
         }
-        val result = NumberBuilder.zero(base).appendDigits( digitList.reversed() ).toValue()
+        val result = NumberBuilder.zero(base).appendDigits( digitList.reversed() ).toFlexNumber()
         return if( n < 0) result.negated() else result
     }
 
@@ -89,7 +89,7 @@ class ArithmeticTests {
             .appendDigit(10, 0)
             .appendDigit(10, 0)
             .appendDigit(10, 1)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals(expected, actual)
         assertEquals(0, remainder)
@@ -121,7 +121,7 @@ class ArithmeticTests {
             .appendDigit(2, 1)
             .appendDigit(2, 0)
             .appendDigit(2, 1)
-            .toValue()
+            .toFlexNumber()
 
         val thirteenTimes11 = thirteenBase2.times(11)
 
@@ -216,7 +216,7 @@ class ArithmeticTests {
             .appendDigit( 2, 0)
             .appendDigit( 2, 1)
             .appendDigit( 2, 1)
-            .toValue()
+            .toFlexNumber()
         assertEquals(expected, actual)
     }
 
@@ -356,7 +356,7 @@ class ArithmeticTests {
             .appendPoint()
             .appendDigit(10, 7)
             .appendDigit(10, 8)
-            .toValue()
+            .toFlexNumber()
 
         var b = NumberBuilder.zero(10)
             .appendDigit(10, 2)
@@ -364,7 +364,7 @@ class ArithmeticTests {
             .appendPoint()
             .appendDigit(10, 4)
             .appendDigit(10, 3)
-            .toValue()
+            .toFlexNumber()
 
         var actual = a.times( b, prefs )
         var expected = NumberBuilder.zero(10)
@@ -376,7 +376,7 @@ class ArithmeticTests {
             .appendDigit(10, 8)
             .appendDigit(10, 5)
             .appendDigit(10, 4)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals( expected, actual )
 
@@ -405,7 +405,7 @@ class ArithmeticTests {
             .appendDigit(10, 4)
             .appendPoint()
             .appendDigit(10, 5)
-            .toValue()
+            .toFlexNumber()
 
         var actualNumber = a.times(a, prefs)
 
@@ -415,7 +415,7 @@ class ArithmeticTests {
             .appendPoint()
             .appendDigit(10, 2)
             .appendDigit(10, 5)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals(expectedNumber, actualNumber)
 
@@ -440,17 +440,17 @@ class ArithmeticTests {
             .appendDigit(10, 1)
             .appendDigit(10, 8)
             .appendDigit(10, 6)
-            .toValue()
+            .toFlexNumber()
 
         var b = NumberBuilder.zero(10)
             .appendDigit(10, 3)
-            .toValue()
+            .toFlexNumber()
 
         var actual = a.dividedBy( b, prefs )
         var expected = NumberBuilder.zero(10)
             .appendDigit(10, 6)
             .appendDigit(10, 2)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals( expected, actual )
 
@@ -459,18 +459,18 @@ class ArithmeticTests {
             .appendDigit(10, 9)
             .appendDigit(10, 9)
             .appendDigit(10, 9)
-            .toValue()
+            .toFlexNumber()
 
         b = NumberBuilder.zero(10)
             .appendDigit(10, 3)
-            .toValue()
+            .toFlexNumber()
 
         actual = a.dividedBy( b, prefs )
         expected = NumberBuilder.zero(10)
             .appendDigit(10, 3)
             .appendDigit(10, 3)
             .appendDigit(10, 3)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals( expected, actual )
 
@@ -479,18 +479,18 @@ class ArithmeticTests {
         // 5 / 2
         a = NumberBuilder.zero(10)
             .appendDigit(10, 5)
-            .toValue()
+            .toFlexNumber()
 
         b = NumberBuilder.zero(10)
             .appendDigit(10, 2)
-            .toValue()
+            .toFlexNumber()
 
         actual = a.dividedBy( b, prefs )
         expected = NumberBuilder.zero(10)
             .appendDigit(10, 2)
             .appendPoint()
             .appendDigit(10, 5)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals( expected, actual )
 
@@ -499,11 +499,11 @@ class ArithmeticTests {
             .appendDigit(10, 2)
             .appendDigit(10, 0)
             .appendDigit(10, 0)
-            .toValue()
+            .toFlexNumber()
 
         b = NumberBuilder.zero(10)
             .appendDigit(10, 7)
-            .toValue()
+            .toFlexNumber()
 
         actual = a.dividedBy( b, prefs )
         expected = NumberBuilder.zero(10)
@@ -528,7 +528,7 @@ class ArithmeticTests {
             .appendDigit(10, 4)
             .appendDigit(10, 2)
             .appendDigit(10, 8)
-            .toValue()
+            .toFlexNumber()
 
         assertEquals( expected, actual )
 

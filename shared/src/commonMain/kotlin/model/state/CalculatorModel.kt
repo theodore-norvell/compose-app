@@ -16,33 +16,40 @@ class CalculatorModel : Observable() {
     private fun standardButtonLayout(): List<List<ButtonDescription>> {
         return listOf(
             listOf(
-                Descriptions.RCL,
+                Descriptions.SECOND,
+                Descriptions.EVAL,
                 Descriptions.STO,
                 Descriptions.X,
                 Descriptions.Y,
                 Descriptions.Z
             ),
-            listOf(Descriptions.ENTER, Descriptions.NEGATE, Descriptions.SWAP, Descriptions.UNDO),
+            listOf(Descriptions.ENTER, Descriptions.DROP, Descriptions.SWAP, Descriptions.UNDO),
             listOf(
+                Descriptions.i,
                 Descriptions.DIGIT(7),
                 Descriptions.DIGIT(8),
                 Descriptions.DIGIT(9),
                 Descriptions.DIVIDE
             ),
             listOf(
+                Descriptions.NEGATE,
                 Descriptions.DIGIT(4),
                 Descriptions.DIGIT(5),
                 Descriptions.DIGIT(6),
                 Descriptions.MULTIPLY
             ),
             listOf(
+                Descriptions.CLEAR,
                 Descriptions.DIGIT(1),
                 Descriptions.DIGIT(2),
                 Descriptions.DIGIT(3),
                 Descriptions.SUBTRACT
             ),
-            listOf(Descriptions.DIGIT(0), Descriptions.POINT, Descriptions.EXP, Descriptions.ADD)
-
+            listOf(
+                Descriptions.DIGIT(0),
+                Descriptions.POINT,
+                Descriptions.EXP,
+                Descriptions.ADD)
         )
     }
 
@@ -96,4 +103,8 @@ class CalculatorModel : Observable() {
     fun makeBinOp(op: BinaryOperator) = updateState( state.mkBinOp(op) )
     fun makeVarRef(name: String) = updateState( state.mkVarRef( name ))
     fun store()  = updateState( state.store({str -> emitError(str)}) )
+    fun eval()  = updateState( state.eval({str -> emitError(str)}) )
+    fun clear() = updateState( state.clear() )
+    fun drop() = updateState( state.drop() )
+    fun imaginary() = updateState( state.imaginary() )
 }

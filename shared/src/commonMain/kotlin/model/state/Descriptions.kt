@@ -7,14 +7,40 @@ data class ButtonDescription(val primaryOperation : ButtonOperation, val seconda
 data class ButtonOperation( val name : String, val clickAction : (CalculatorModel) -> Unit )
 class Descriptions {
     companion object {
-        val RCL = ButtonDescription(
+
+        val CLEAR = ButtonDescription(
+            ButtonOperation("CLEAR") {
+                it.clear()
+            },
+            ButtonOperation( "TBD") {
+                it.todo()
+            }
+        )
+
+        val DROP = ButtonDescription(
+            ButtonOperation("DROP") {
+                it.drop()
+            },
+            ButtonOperation( "TBD") {
+                it.todo()
+            }
+        )
+        val EVAL = ButtonDescription(
                 ButtonOperation("EVAL") {
-                    it.todo()
+                    it.eval()
                 },
                 ButtonOperation( "TBD") {
                     it.todo()
                 }
             )
+        val SECOND = ButtonDescription(
+            ButtonOperation("⇧") {
+                it.todo()
+            },
+            ButtonOperation( "⇩") {
+                it.todo()
+            }
+        )
         val STO = ButtonDescription(
             ButtonOperation("STO") {
                 it.store()
@@ -136,6 +162,14 @@ class Descriptions {
                 it.todo()
             }
         )}
+        val i = ButtonDescription(
+            ButtonOperation("i") {
+                it.imaginary()
+            },
+            ButtonOperation( "TBD") {
+                it.todo()
+            }
+        )
     }
 
 }
