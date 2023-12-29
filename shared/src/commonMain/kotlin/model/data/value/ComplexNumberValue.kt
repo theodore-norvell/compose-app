@@ -23,8 +23,8 @@ data class ComplexNumberValue  (
     override fun add( other : Value, prefs : DisplayAndComputePreferences) : Value? {
         when( other ) {
             is ComplexNumberValue -> {
-                val newRealPart = this.realPart.add(other.realPart, prefs)
-                val newImaginaryPart = this.imaginaryPart.add(other.imaginaryPart, prefs)
+                val newRealPart = this.realPart.plus(other.realPart, prefs)
+                val newImaginaryPart = this.imaginaryPart.plus(other.imaginaryPart, prefs)
                 return ComplexNumberValue(newRealPart, newImaginaryPart)
             }
         }
@@ -44,8 +44,8 @@ data class ComplexNumberValue  (
                 val ad = a.times(d, prefs)
                 val bd = b.times(d, prefs)
                 val bc = b.times(c, prefs)
-                val newRealPart = ac.add( bd, prefs )
-                val newImaginaryPart = ad.add( bc, prefs )
+                val newRealPart = ac.plus( bd, prefs )
+                val newImaginaryPart = ad.plus( bc, prefs )
                 return ComplexNumberValue(newRealPart, newImaginaryPart)
             }
         }

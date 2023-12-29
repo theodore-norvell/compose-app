@@ -123,7 +123,7 @@ class ArithmeticTests {
             .appendDigit(2, 1)
             .toValue()
 
-        val thirteenTimes11 = thirteenBase2.multipliedBy(11)
+        val thirteenTimes11 = thirteenBase2.times(11)
 
         assertEquals( 8, thirteenTimes11.exponent )
 
@@ -143,7 +143,7 @@ class ArithmeticTests {
         // Calculate 2 ^ 1000 in base 2
         var acc = toValue(2, 1)
         for( i in 0 ..< 1000)
-            acc = acc.multipliedBy(2)
+            acc = acc.times(2)
 
         assertEquals( 1001, acc.exponent )
         for( i in 0 ..< 1000)
@@ -225,55 +225,55 @@ class ArithmeticTests {
         var x = a
         var y = b
         var expected = c.convertedToBase(prefs)
-        var actual = x.add( y, prefs)
+        var actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = c
         y = a.negated()
         expected = b.convertedToBase(prefs)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = c
         y = b.negated()
         expected  = a.convertedToBase(prefs)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = a.negated()
         y = b.negated()
         expected  = c.negated().convertedToBase(prefs)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = c.negated()
         y = a
         expected  = b.negated().convertedToBase(prefs)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = c.negated()
         y = b
         expected  = a.negated().convertedToBase(prefs)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = a
         y = a.negated()
         expected  = FlexNumber.mkZero(base)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = b
         y = b.negated()
         expected  = FlexNumber.mkZero(base)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = c
         y = c.negated()
         expected  = FlexNumber.mkZero(base)
-        actual = x.add( y, prefs)
+        actual = x.plus( y, prefs)
         assertEquals(expected, actual)
     }
 
@@ -282,7 +282,7 @@ class ArithmeticTests {
         val nNeg18 = toValue( 10, 18 ).negated()
 
         var expected = nNeg18
-        var actual = nNeg9.add( nNeg9, prefs)
+        var actual = nNeg9.plus( nNeg9, prefs)
         assertEquals(expected, actual)
 
 
@@ -419,7 +419,7 @@ class ArithmeticTests {
 
         assertEquals(expectedNumber, actualNumber)
 
-        actualNumber = actualNumber.add( FlexNumber.mkZero(10), prefs )
+        actualNumber = actualNumber.plus( FlexNumber.mkZero(10), prefs )
 
         assertEquals(expectedNumber, actualNumber)
 
@@ -432,5 +432,126 @@ class ArithmeticTests {
         val aRendered = actual?.render(prefs)
 
         assertEquals("20.25", aRendered)
+    }
+
+    @Test fun divide0() {
+        // 186 / 3
+        var a = NumberBuilder.zero(10)
+            .appendDigit(10, 1)
+            .appendDigit(10, 8)
+            .appendDigit(10, 6)
+            .toValue()
+
+        var b = NumberBuilder.zero(10)
+            .appendDigit(10, 3)
+            .toValue()
+
+        var actual = a.dividedBy( b, prefs )
+        var expected = NumberBuilder.zero(10)
+            .appendDigit(10, 6)
+            .appendDigit(10, 2)
+            .toValue()
+
+        assertEquals( expected, actual )
+
+        // 999 / 3
+        a = NumberBuilder.zero(10)
+            .appendDigit(10, 9)
+            .appendDigit(10, 9)
+            .appendDigit(10, 9)
+            .toValue()
+
+        b = NumberBuilder.zero(10)
+            .appendDigit(10, 3)
+            .toValue()
+
+        actual = a.dividedBy( b, prefs )
+        expected = NumberBuilder.zero(10)
+            .appendDigit(10, 3)
+            .appendDigit(10, 3)
+            .appendDigit(10, 3)
+            .toValue()
+
+        assertEquals( expected, actual )
+
+
+
+        // 5 / 2
+        a = NumberBuilder.zero(10)
+            .appendDigit(10, 5)
+            .toValue()
+
+        b = NumberBuilder.zero(10)
+            .appendDigit(10, 2)
+            .toValue()
+
+        actual = a.dividedBy( b, prefs )
+        expected = NumberBuilder.zero(10)
+            .appendDigit(10, 2)
+            .appendPoint()
+            .appendDigit(10, 5)
+            .toValue()
+
+        assertEquals( expected, actual )
+
+        // 200 / 7
+        a = NumberBuilder.zero(10)
+            .appendDigit(10, 2)
+            .appendDigit(10, 0)
+            .appendDigit(10, 0)
+            .toValue()
+
+        b = NumberBuilder.zero(10)
+            .appendDigit(10, 7)
+            .toValue()
+
+        actual = a.dividedBy( b, prefs )
+        expected = NumberBuilder.zero(10)
+            .appendDigit(10, 2)
+            .appendDigit(10, 8)
+            .appendPoint()
+            .appendDigit(10, 5)
+            .appendDigit(10, 7)
+            .appendDigit(10, 1)
+            .appendDigit(10, 4)
+            .appendDigit(10, 2)
+            .appendDigit(10, 8)
+            .appendDigit(10, 5)
+            .appendDigit(10, 7)
+            .appendDigit(10, 1)
+            .appendDigit(10, 4)
+            .appendDigit(10, 2)
+            .appendDigit(10, 8)
+            .appendDigit(10, 5)
+            .appendDigit(10, 7)
+            .appendDigit(10, 1)
+            .appendDigit(10, 4)
+            .appendDigit(10, 2)
+            .appendDigit(10, 8)
+            .toValue()
+
+        assertEquals( expected, actual )
+
+
+        a = toValue(7, 4)
+        b = toValue(7, 55)
+        val c = toValue(7, 4 * 55)
+        actual = c.dividedBy(b, prefs.copy(base=7))
+        assertEquals(a, actual)
+    }
+
+    @Test fun divide1() {
+        // Dividing integers to get integers
+        for (base in listOf<Int>(2, 7, 8, 10, 12, 16)) {
+            for (aInt in 0..<1000) {
+                val a = toValue(base, aInt)
+                for (bInt in 1..<1000) {
+                    val b = toValue(base, bInt)
+                    val c = toValue(base, aInt * bInt)
+                    val actual = c.dividedBy(b, prefs.copy(base=base))
+                    assertEquals(a, actual)
+                }
+            }
+        }
     }
 }

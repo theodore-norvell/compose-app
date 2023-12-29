@@ -18,9 +18,13 @@ sealed class ANumber {
     abstract fun isZero() : Boolean
     abstract fun negated() : ANumber
 
+    abstract fun convertedToBase( prefs: DisplayAndComputePreferences) : ANumber
+    abstract fun plus(other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+
     abstract fun times( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
 
-    abstract fun add( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+    abstract fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+
 }
 sealed class AFixedOrFlexibleNumber constructor(
                                                 val isNegative : Boolean,
@@ -66,7 +70,15 @@ sealed class AFixedOrFlexibleNumber constructor(
         return a + 257*(b + 257*(f+257*g))
     }
 
-    abstract override fun negated() : AFixedOrFlexibleNumber
+    abstract override fun negated() : ANumber
+
+    abstract override fun convertedToBase( prefs: DisplayAndComputePreferences) : ANumber
+
+    abstract override fun plus(other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+
+    abstract override fun times( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+
+    abstract override fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
 }
 
 class FlexNumber
@@ -245,7 +257,7 @@ class FlexNumber
     }
 
     /** Multiply by a small natural number */
-    fun multipliedBy(n : Int) : FlexNumber {
+    fun times(n : Int) : FlexNumber {
         // n must be such that n*base <= the maximum integer
         val newDigits = MutableList<Byte>(0) { 0 }
         // MSD at right, so work left to right
@@ -269,43 +281,6 @@ class FlexNumber
         return copy( digits = newDigits.toList(), exponent = newExp )
     }
 
-    override fun times( q : ANumber, prefs: DisplayAndComputePreferences ) : ANumber {
-        when (q) {
-            is FlexNumber -> {
-                val a = this.convertedToBase(prefs)
-                val aSize = a.digits.size
-                val b = q.convertedToBase(prefs)
-                val bSize = b.digits.size
-                val newDigitsInt = MutableList<Int>(aSize + bSize) { 0 }
-                for (i in 0..<aSize) {
-                    for (j in 0..<bSize) {
-                        val d = a.digits[i].toInt() * b.digits[j].toInt()
-                        newDigitsInt[i + j] += d
-                    }
-                }
-                var carry = 0
-                for( k in (0 ..< newDigitsInt.size) ) {
-                    val q = (newDigitsInt[k] + carry) % prefs.base
-                    carry = (newDigitsInt[k] + carry) / prefs.base
-                    newDigitsInt[k] = q
-                }
-                check( carry == 0 )
-                val newDigitsSize = min( prefs.sizeLimit, newDigitsInt.size )
-                val shift = max(0, newDigitsInt.size - newDigitsSize)
-                val newDigits = MutableList<Byte>( newDigitsSize ) { 0 }
-                for( k in 0 ..< newDigitsSize )
-                    newDigits[k] = newDigitsInt[k+shift].toByte()
-                val newIsNegative = a.isNegative != b.isNegative
-                val newExponent = a.exponent + b.exponent
-                return FlexNumber.create(newIsNegative,
-                    prefs.base,
-                    newDigitsSize,
-                    newDigits,
-                    newExponent )
-            }
-        }
-    }
-
 
     fun isAnInteger() = digits.size <= exponent
 
@@ -313,7 +288,7 @@ class FlexNumber
 
     fun digitsAfterPoint() = max(0,digits.size-exponent)
 
-    fun convertedToBase( prefs: DisplayAndComputePreferences) : FlexNumber {
+    override fun convertedToBase( prefs: DisplayAndComputePreferences) : FlexNumber {
         val b = prefs.base
         val size = prefs.sizeLimit
         if( b == base ) {
@@ -356,7 +331,7 @@ class FlexNumber
         }
     }
 
-    fun add(other : FlexNumber, prefs: DisplayAndComputePreferences ) : ANumber {
+    private fun plus(other : FlexNumber, prefs: DisplayAndComputePreferences ) : ANumber {
         val base = prefs.base
         val sizeLimit = prefs.sizeLimit
         val x = other.convertedToBase( prefs)
@@ -417,11 +392,135 @@ class FlexNumber
         return result
     }
 
-
-
-    override fun add(other: ANumber, prefs: DisplayAndComputePreferences) : ANumber {
-        when( other ) {
-            is FlexNumber -> return this.add( other, prefs )
+    private fun times( q : FlexNumber, prefs: DisplayAndComputePreferences ) : FlexNumber {
+        val a = this.convertedToBase(prefs)
+        val aSize = a.digits.size
+        val b = q.convertedToBase(prefs)
+        val bSize = b.digits.size
+        val newDigitsInt = MutableList<Int>(aSize + bSize) { 0 }
+        for (i in 0..<aSize) {
+            for (j in 0..<bSize) {
+                val d = a.digits[i].toInt() * b.digits[j].toInt()
+                newDigitsInt[i + j] += d
+            }
         }
+        var carry = 0
+        for( k in (0 ..< newDigitsInt.size) ) {
+            val q = (newDigitsInt[k] + carry) % prefs.base
+            carry = (newDigitsInt[k] + carry) / prefs.base
+            newDigitsInt[k] = q
+        }
+        check( carry == 0 )
+        val newDigitsSize = min( prefs.sizeLimit, newDigitsInt.size )
+        val shift = max(0, newDigitsInt.size - newDigitsSize)
+        val newDigits = MutableList<Byte>( newDigitsSize ) { 0 }
+        for( k in 0 ..< newDigitsSize )
+            newDigits[k] = newDigitsInt[k+shift].toByte()
+        val newIsNegative = a.isNegative != b.isNegative
+        val newExponent = a.exponent + b.exponent
+        return FlexNumber.create(newIsNegative,
+            prefs.base,
+            newDigitsSize,
+            newDigits,
+            newExponent )
+
     }
+
+    private fun dividedBy(q : FlexNumber, prefs: DisplayAndComputePreferences ) : FlexNumber {
+        // Precondition q is not zero
+        check( ! q.isZero() )
+        val a = this.convertedToBase(prefs)
+        val aSize = a.digits.size
+        val b = q.convertedToBase(prefs)
+        val bSize = b.digits.size
+        val workingSize = bSize + prefs.sizeLimit
+        val accumulator = MutableList<Int>(workingSize) { 0 }
+        (0..<aSize).forEach { accumulator[it+workingSize-aSize] = a.digits[it].toInt() }
+        val bDigits = b.digits
+        val resultDigits = MutableList<Byte>(workingSize) { 0 }
+
+        fun tooBig( d : Int, k : Int ) : Boolean {
+            var result = false ;
+            var notTooBig = false ;
+            var i = k
+            var j = bDigits.size - 1
+            var carry = if( k == workingSize-1 ) 0 else accumulator[k+1]
+            while( i >= 0 && j >= 0 && !result && ! notTooBig ) {
+                carry = accumulator[i] + carry * prefs.base - d * bDigits[j]
+                if( carry < 0 ) result = true
+                else if( carry >= d ) notTooBig = true
+                i -= 1
+                j -= 1
+            }
+            return result
+        }
+
+        fun sub( d : Int, k : Int ) : Unit {
+            var i = k
+            var j = bDigits.size - 1
+            if( k != workingSize-1 ) {
+                accumulator[k] += accumulator[k+1] * prefs.base
+                accumulator[k+1] = 0
+            }
+            while( i >= 0 && j >= 0 ) {
+                accumulator[i] = accumulator[i] - d * bDigits[j]
+                var p = i
+                // If the digit is negative, borrow from the neighbor until it is mot
+                while( accumulator[p] < 0 ) {
+                    accumulator[p] += prefs.base
+                    accumulator[p+1] -= 1
+                    if( accumulator[p] >= 0)  p += 1
+                }
+                i -= 1
+                j -= 1
+            }
+        }
+
+        // k Is the location of the next output digit
+        for( k in (0..<workingSize).reversed() ) {
+            // Find digit k of the result.
+            var lo = 0
+            var hi = base
+            while( hi-lo > 1) {
+                val mid = (hi+lo)/2
+                if( tooBig(mid,k) ) hi = mid else lo = mid
+            }
+            resultDigits[k] = lo.toByte()
+            sub(lo,k)
+        }
+
+        val lastNonZero = resultDigits.indexOfLast { it.toInt() != 0 }
+        if( lastNonZero == -1 ) {
+            return mkZero(prefs.base) }
+        else {
+            val numberOfDroppedZeros = resultDigits.size -  1 - lastNonZero
+            val newDigits0 = resultDigits.toList().take(lastNonZero+1 )
+            val sizeOfOutput = min(prefs.sizeLimit, lastNonZero+1)
+            val newDigits = newDigits0.takeLast(sizeOfOutput)
+            val newExponent = a.exponent - b.exponent + 1 - numberOfDroppedZeros
+            val newIsNegative = a.isNegative != b.isNegative
+            return FlexNumber.create(
+                newIsNegative,
+                prefs.base,
+                sizeOfOutput,
+                newDigits,
+                newExponent
+            ) }
+
+    }
+
+    override fun plus(other: ANumber, prefs: DisplayAndComputePreferences) : ANumber =
+        when( other ) {
+            is FlexNumber ->  this.plus( other, prefs )
+        }
+    override fun times( other : ANumber, prefs: DisplayAndComputePreferences ) : ANumber =
+        when (other) {
+            is FlexNumber -> this.times( other, prefs )
+        }
+
+    override fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber  =
+        when (other) {
+            is FlexNumber -> this.dividedBy( other, prefs )
+        }
+
 }
