@@ -31,7 +31,33 @@ data class ComplexNumberValue  (
     }
 
     // TODO Complete
-    override fun divide( other : Value,  prefs : DisplayAndComputePreferences) : Value? = null
+    override fun divide( other : Value,  prefs : DisplayAndComputePreferences) : Value? {
+        when( other ) {
+            is ComplexNumberValue -> {
+                //  c+di        (ac + bd) + (ad - cd)i
+                // ------  = ----------------------------
+                //  a+bi          a^2 + b^2
+                val c = this.realPart
+                val d = this.imaginaryPart
+                val a = other.realPart
+                val b = other.imaginaryPart
+                val aa = a.times(a, prefs)
+                val bb = b.times(b, prefs)
+                val denom = aa.plus(bb, prefs)
+                if( denom.isZero() )
+                    return null
+                else {
+                    val ac = a.times(c, prefs)
+                    val ad = a.times(d, prefs)
+                    val bd = b.times(d, prefs)
+                    val bc = b.times(c, prefs)
+                    val newRealPart = ac.plus( bd, prefs ).dividedBy(denom, prefs)
+                    val newImaginaryPart = ad.plus( bc.negated(), prefs ).dividedBy(denom, prefs)
+                    return ComplexNumberValue(newRealPart, newImaginaryPart)
+                }
+            }
+        }
+    }
 
     override fun multiply( other : Value,  prefs : DisplayAndComputePreferences) : Value? {
         when( other ) {

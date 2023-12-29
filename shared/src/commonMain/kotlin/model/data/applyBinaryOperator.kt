@@ -35,7 +35,7 @@ fun applyBinaryOperator(op : BinaryOperator,
 
                 BinaryOperator.DIVIDE ->
                     when( val resultValue =  r.divide(l, prefs ) ) {
-                        // null indicates failure
+                        // null indicates failure.  Including divide by 0.
                         null -> return ErrorFormula("incompatible operands", default)
                         else -> return ValueFormula( resultValue )
                     }
