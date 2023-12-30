@@ -2,7 +2,10 @@ package model.state
 
 import model.data.BinaryOperator
 
-data class ButtonDescription(val primaryOperation : ButtonOperation, val secondaryOperation: ButtonOperation)
+data class ButtonDescription(
+    val primaryOperation : ButtonOperation,
+    val secondaryOperation: ButtonOperation? = null,
+    val weight : Float = 1f)
 
 data class ButtonOperation( val name : String, val clickAction : (CalculatorModel) -> Unit )
 class Descriptions {
@@ -11,162 +14,117 @@ class Descriptions {
         val CLEAR = ButtonDescription(
             ButtonOperation("CLEAR") {
                 it.clear()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
 
         val DROP = ButtonDescription(
             ButtonOperation("DROP") {
                 it.drop()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val EVAL = ButtonDescription(
                 ButtonOperation("EVAL") {
                     it.eval()
-                },
-                ButtonOperation( "TBD") {
-                    it.todo()
                 }
             )
-        val SECOND = ButtonDescription(
+        val SHIFT = ButtonDescription(
             ButtonOperation("⇧") {
-                it.todo()
+                it.shift()
             },
             ButtonOperation( "⇩") {
-                it.todo()
+                it.unshift()
             }
         )
         val STO = ButtonDescription(
             ButtonOperation("STO") {
                 it.store()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val X = ButtonDescription(
             ButtonOperation("x") {
                 it.makeVarRef("x")
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val Y = ButtonDescription(
             ButtonOperation("y") {
                 it.makeVarRef("y")
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val Z = ButtonDescription(
             ButtonOperation("z") {
                 it.makeVarRef("z")
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val ENTER = ButtonDescription(
             ButtonOperation("ENTER") {
                 it.enter()
             },
-            ButtonOperation( "TBD") {
-                it.todo()
-            }
+            weight = 2f
         )
         val NEGATE = ButtonDescription(
             ButtonOperation("+/-") {
                 it.negate()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val SWAP = ButtonDescription(
             ButtonOperation("SWAP") {
                 it.swap()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val UNDO = ButtonDescription(
             ButtonOperation("↶") {
-                it.todo()
+                it.undo()
             },
             ButtonOperation( "↷") {
-                it.todo()
+                it.redo()
             }
         )
         val DIVIDE = ButtonDescription(
             ButtonOperation("÷") {
                 it.makeBinOp(BinaryOperator.DIVIDE)
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val MULTIPLY = ButtonDescription(
             ButtonOperation("×") {
                 it.makeBinOp(BinaryOperator.MULTIPLY)
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val ADD = ButtonDescription(
             ButtonOperation("+") {
                 it.makeBinOp(BinaryOperator.ADD)
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val SUBTRACT = ButtonDescription(
             ButtonOperation("-") {
                 it.makeBinOp(BinaryOperator.SUBTRACT)
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val POINT = ButtonDescription(
             ButtonOperation(".") {
                 it.appendPoint()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val EXP = ButtonDescription(
-            ButtonOperation("E") {
+            ButtonOperation("exp") {
                 it.startExponent()
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )
         val DIGIT = {d : Byte ->ButtonDescription(
             ButtonOperation(d.toString()) {
                 println("DIGIT clicked")
                 it.appendDigit(d)
-            },
-            ButtonOperation( "TBD") {
-                it.todo()
             }
         )}
         val i = ButtonDescription(
             ButtonOperation("i") {
                 it.imaginary()
+            }
+        )
+        val TODO = ButtonDescription(
+            ButtonOperation("TODO") {
+                it.todo()
             },
-            ButtonOperation( "TBD") {
+            ButtonOperation("TODO") {
                 it.todo()
             }
         )

@@ -7,6 +7,9 @@ class CalculatorModel : Observable() {
     private var state = CalculatorState()
     private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
     private val errors : MutableList<String> = MutableList(0) { "" }
+    private val undoStack = mutableListOf<CalculatorState>()
+    private val redoStack = mutableListOf<CalculatorState>()
+    private var shifted = false
 
     private fun emitError(message: String) {
         errors.add( "$message" )
@@ -16,14 +19,18 @@ class CalculatorModel : Observable() {
     private fun standardButtonLayout(): List<List<ButtonDescription>> {
         return listOf(
             listOf(
-                Descriptions.SECOND,
+                Descriptions.SHIFT,
                 Descriptions.EVAL,
                 Descriptions.STO,
                 Descriptions.X,
                 Descriptions.Y,
                 Descriptions.Z
             ),
-            listOf(Descriptions.ENTER, Descriptions.DROP, Descriptions.SWAP, Descriptions.UNDO),
+            listOf(
+                Descriptions.ENTER,
+                Descriptions.DROP,
+                Descriptions.SWAP,
+                Descriptions.UNDO),
             listOf(
                 Descriptions.i,
                 Descriptions.DIGIT(7),
@@ -46,6 +53,7 @@ class CalculatorModel : Observable() {
                 Descriptions.SUBTRACT
             ),
             listOf(
+                Descriptions.TODO,
                 Descriptions.DIGIT(0),
                 Descriptions.POINT,
                 Descriptions.EXP,
@@ -66,6 +74,8 @@ class CalculatorModel : Observable() {
     fun buttons() = buttons
 
     private fun updateState( newState : CalculatorState ) {
+        redoStack.clear()
+        undoStack += state
         state = newState
         // Here the buttons should be updated based on the new state.
         notifyAllOservers()
@@ -107,4 +117,32 @@ class CalculatorModel : Observable() {
     fun clear() = updateState( state.clear() )
     fun drop() = updateState( state.drop() )
     fun imaginary() = updateState( state.imaginary() )
+    fun undo() {
+        if( undoStack.isNotEmpty() ) {
+            redoStack += state
+            state = undoStack.last()
+            undoStack.removeLast()
+            notifyAllOservers()
+        }
+    }
+
+    fun redo() {
+        if( redoStack.isNotEmpty() ) {
+            undoStack += state
+            state = redoStack.last()
+            redoStack.removeLast()
+            notifyAllOservers()
+        }
+    }
+
+    fun shifted(): Boolean = shifted
+    fun shift() {
+        shifted = true
+        notifyAllOservers()
+    }
+
+    fun unshift() {
+        shifted = false
+        notifyAllOservers()
+    }
 }

@@ -3,6 +3,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,13 +34,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
@@ -165,7 +169,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                     )
                     {
                         rowOfStrings.forEach { desc ->
-                            mkButton(viewModel, desc)
+                            mkButton(viewModel, desc, uiState.shifted)
                         }
                     }
                 }
@@ -206,39 +210,53 @@ fun <T>DropDownPicker(currentPickName : String,
 }
 
 @Composable
-private fun mkButton(
+private fun RowScope.mkButton(
     viewModel: CalculatorViewModel,
-    desc : ButtonDescription
+    desc : ButtonDescription,
+    shifted : Boolean
 ) {
 
-    val w = 1.0f // Set to 2 for double wide.  Almost looks right.
-    // TODO deal with shifts
+    fun onClick() {
+        when( desc.secondaryOperation ) {
+            null -> viewModel.click(desc.primaryOperation)
+            else ->
+                if( shifted ) viewModel.click(desc.secondaryOperation)
+                else viewModel.click(desc.primaryOperation)
+        }
+    }
     val primaryLabelStr = desc.primaryOperation.name
-    val primaryColor = Color.White
-    val secondaryLabelStr = desc.secondaryOperation.name
-    val secondaryColor = Color.Yellow
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    val primaryColor = if( shifted && desc.secondaryOperation != null) Color.LightGray else Color.Yellow
+
+    val backgroundColor = if( shifted ) Color.hsl(220.0f, 0.50f, 0.50f)
+                            else Color.hsl(220.0f, 0.50f, 0.34f)
+    Button(
+        modifier = Modifier
+            .padding(horizontal=5.dp, vertical = 0.dp)
+            .shadow(20.dp, spotColor = Color.Black)
+            .fillMaxHeight()
+            .fillMaxWidth().weight(desc.weight),
+        shape = AbsoluteCutCornerShape(10.dp),
+        colors = ButtonDefaults.buttonColors(  backgroundColor = backgroundColor),
+        onClick = {onClick()}
     ) {
-        Text(
-            text = secondaryLabelStr,
-            color = secondaryColor,
-            modifier = Modifier.background(Color.Transparent)
-        )
-        Button(
-            modifier = Modifier.weight(w).shadow(20.dp, spotColor = Color.Black),
-            shape = AbsoluteCutCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.hsl(220.0f, 0.50f, 0.34f) ),
-            onClick = { viewModel.click(desc) }
+        Column(
+            modifier = Modifier.padding(0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
+            if( desc.secondaryOperation != null ) {
+                val secondaryLabelStr = desc.secondaryOperation.name
+                val secondaryColor =  if( shifted ) Color.Yellow else Color.LightGray
+                AutoResizedText(
+                    text = secondaryLabelStr,
+                    color = secondaryColor,
+                    modifier = Modifier.background(Color.Transparent)
+                ) }
+            AutoResizedText(
                 text = primaryLabelStr,
                 color = primaryColor,
                 modifier = Modifier.background(Color.Transparent)
             )
         }
-
     }
 }
 
@@ -282,5 +300,40 @@ fun MemoryItemView(pair : Pair<String, String>, nameAction : (String) -> Unit, v
 
     }
 }
+
+@Composable
+fun AutoResizedText(
+    text : String,
+    style : TextStyle = MaterialTheme.typography.body1,
+    modifier : Modifier = Modifier,
+    color : Color = style.color)
+{
+
+    var resizedTextStyle by remember { mutableStateOf(style) }
+    val defaultFontSize = MaterialTheme.typography.body1.fontSize
+    if( resizedTextStyle.fontSize.isUnspecified )
+        resizedTextStyle = resizedTextStyle.copy(fontSize = defaultFontSize)
+
+    var shouldDraw by remember { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        color = color,
+        modifier = modifier.drawWithContent {
+                if( shouldDraw ) { drawContent() }
+        },
+        softWrap = false,
+        style = resizedTextStyle,
+        onTextLayout = { result ->
+            if( result.didOverflowWidth ) {
+                val newSize = resizedTextStyle.fontSize * 0.95
+                resizedTextStyle = resizedTextStyle.copy(
+                    fontSize = newSize ) }
+            else
+                shouldDraw = true
+        }
+    )
+}
+
 expect fun getPlatformName(): String
 
