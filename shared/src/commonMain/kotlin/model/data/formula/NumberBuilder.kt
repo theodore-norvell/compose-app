@@ -25,6 +25,9 @@ class NumberBuilder private constructor (
 
     override fun asNumberBuilder() : NumberBuilder = this
 
+    fun isFresh() =
+        numberEntryState == NumberEntryState.BEFORE_POINT && !isNegative && digits.isEmpty()
+
     fun canAppendDigit(base: Int, digit: Byte): Boolean {
         return when( numberEntryState ) {
             NumberEntryState.BEFORE_POINT, NumberEntryState.AFTER_POINT ->

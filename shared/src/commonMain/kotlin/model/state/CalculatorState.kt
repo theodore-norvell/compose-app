@@ -269,21 +269,18 @@ data class CalculatorState(
         }
 
     fun clear(): CalculatorState {
-        val newTop = when (top) {
-            is NumberBuilder -> NumberBuilder.zero( mode.base )
-            is Formula -> top
-        }
-        return copy(top = newTop )
+        val newTop = NumberBuilder.zero( mode.base )
+        return ensureReady().copy(top = newTop )
     }
 
     fun imaginary(): CalculatorState =
-        when( top ) {
-            is NumberBuilder -> {
+        when {
+            top is NumberBuilder && ! top.isFresh() -> {
                 // Might want to avoid this if the Number builder is
                 // completely fresh.
                 copy(top = top.imaginary())
             }
-            is Formula -> {
+            else  -> {
                 val zero = FlexNumber.mkZero( mode.base )
                 val one = FlexNumber.mkOne( mode.base )
                 val newTop = ValueFormula( ComplexNumberValue(zero,one))

@@ -12,13 +12,16 @@ data class ComplexNumberValue  (
         val rootMinus1 = "i"
         if( imaginaryPart.isZero() ) {
             return realPart.render(displayPrefs)
-        } else if( realPart.isZero()) {
-            if( imaginaryPart.isOne() )
-                return rootMinus1
-            else
-                return imaginaryPart.render(displayPrefs) + " " + rootMinus1
         } else {
-            return "(${realPart.render(displayPrefs)} + ${imaginaryPart.render(displayPrefs)} $rootMinus1)"
+            val imaginaryImage =    if( imaginaryPart.isOne() )
+                                        rootMinus1
+                                    else
+                                        imaginaryPart.render(displayPrefs) + " " + rootMinus1
+            return if( realPart.isZero()) {
+                imaginaryImage
+            } else {
+                "(${realPart.render(displayPrefs)} + $imaginaryImage)"
+            }
         }
     }
     override fun negate(): ComplexNumberValue = copy( realPart = realPart.negated(), imaginaryPart = imaginaryPart.negated())
@@ -73,7 +76,7 @@ data class ComplexNumberValue  (
                 val ad = a.times(d, prefs)
                 val bd = b.times(d, prefs)
                 val bc = b.times(c, prefs)
-                val newRealPart = ac.plus( bd, prefs )
+                val newRealPart = ac.plus( bd.negated(), prefs )
                 val newImaginaryPart = ad.plus( bc, prefs )
                 return ComplexNumberValue(newRealPart, newImaginaryPart)
             }

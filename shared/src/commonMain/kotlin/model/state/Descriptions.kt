@@ -98,10 +98,10 @@ class Descriptions {
             }
         )
         val UNDO = ButtonDescription(
-            ButtonOperation("<-") {
+            ButtonOperation("↶") {
                 it.todo()
             },
-            ButtonOperation( "TBD") {
+            ButtonOperation( "↷") {
                 it.todo()
             }
         )

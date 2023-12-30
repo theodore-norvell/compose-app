@@ -162,9 +162,11 @@ class FlexNumber
                     else
                         prefs.maxDigits
                 NumberDisplayMode.Auto ->
-                    if( numberToDisplay.exponent in 0..<10 ) numberToDisplay.exponent
-                    else if(numberToDisplay.exponent in (-3)..<0 ) 0
-                    else (numberToDisplay.exponent - 1).mod(3) + 1
+                    when (numberToDisplay.exponent) {
+                        in 0..<10 -> numberToDisplay.exponent
+                        in (-8)..<0 -> 0
+                        else -> (numberToDisplay.exponent - 1).mod(3) + 1
+                    }
             }
             val displayExponent = numberToDisplay.exponent - digitsBefore
             var digitsToDisplay: Int = max(digitsBefore, min(numberToDisplay.digits.size, prefs.maxDigits))
@@ -176,7 +178,7 @@ class FlexNumber
                 digitsToDisplay,
                 digitsAfter,
                 { numberToDisplay.getDigit(it + displayExponent) },
-                true,
+                digitsAfter > 0,
                 prefs
             )
             if (displayExponent == 0) {
