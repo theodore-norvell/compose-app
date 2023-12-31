@@ -270,7 +270,7 @@ data class CalculatorState(
 
     fun clear(): CalculatorState {
         val newTop = NumberBuilder.zero( mode.base )
-        return ensureReady().copy(top = newTop )
+        return copy(top = newTop ).ensureAfterEnter()
     }
 
     fun imaginary(): CalculatorState =
