@@ -1,133 +1,134 @@
-package model.state
+package model.layouts
 
+import androidx.compose.ui.text.toUpperCase
 import model.data.BinaryOperator
 
-data class ButtonDescription(
-    val primaryOperation : ButtonOperation,
-    val secondaryOperation: ButtonOperation? = null,
-    val weight : Float = 1f)
-
-data class ButtonOperation( val name : String, val clickAction : (CalculatorModel) -> Unit )
-class Descriptions {
+class Ops {
     companion object {
 
-        val CLEAR = ButtonDescription(
+        val CLEAR =
             ButtonOperation("CLEAR") {
                 it.clear()
             }
-        )
 
-        val DROP = ButtonDescription(
+        val DROP =
             ButtonOperation("DROP") {
                 it.drop()
             }
-        )
-        val EVAL = ButtonDescription(
+
+        val EVAL =
                 ButtonOperation("EVAL") {
                     it.eval()
                 }
-            )
-        val SHIFT = ButtonDescription(
+        val SHIFT =
             ButtonOperation("⇧") {
                 it.shift()
-            },
+            }
+        val UNSHIFT =
             ButtonOperation( "⇩") {
                 it.unshift()
             }
-        )
-        val STO = ButtonDescription(
+
+        val STO =
             ButtonOperation("STO") {
                 it.store()
             }
-        )
-        val X = ButtonDescription(
+
+        val X =
             ButtonOperation("x") {
                 it.makeVarRef("x")
             }
-        )
-        val Y = ButtonDescription(
+
+        val Y =
             ButtonOperation("y") {
                 it.makeVarRef("y")
             }
-        )
-        val Z = ButtonDescription(
+
+        val Z =
             ButtonOperation("z") {
                 it.makeVarRef("z")
             }
-        )
-        val ENTER = ButtonDescription(
+
+        val ENTER =
             ButtonOperation("ENTER") {
                 it.enter()
-            },
-            weight = 2f
-        )
-        val NEGATE = ButtonDescription(
+            }
+
+        val NEGATE =
             ButtonOperation("+/-") {
                 it.negate()
             }
-        )
-        val SWAP = ButtonDescription(
+
+        val SWAP =
             ButtonOperation("SWAP") {
                 it.swap()
             }
-        )
-        val UNDO = ButtonDescription(
+
+        val ROLL =
+            ButtonOperation("ROLL") {
+                it.roll()
+            }
+
+        val UNDO =
             ButtonOperation("↶") {
                 it.undo()
-            },
+            }
+
+        val REDO =
             ButtonOperation( "↷") {
                 it.redo()
             }
-        )
-        val DIVIDE = ButtonDescription(
+
+        val DIVIDE =
             ButtonOperation("÷") {
                 it.makeBinOp(BinaryOperator.DIVIDE)
             }
-        )
-        val MULTIPLY = ButtonDescription(
+
+        val MULTIPLY =
             ButtonOperation("×") {
                 it.makeBinOp(BinaryOperator.MULTIPLY)
             }
-        )
-        val ADD = ButtonDescription(
+
+        val ADD =
             ButtonOperation("+") {
                 it.makeBinOp(BinaryOperator.ADD)
             }
-        )
-        val SUBTRACT = ButtonDescription(
+
+        val SUBTRACT =
             ButtonOperation("-") {
                 it.makeBinOp(BinaryOperator.SUBTRACT)
             }
-        )
-        val POINT = ButtonDescription(
+
+        val POINT =
             ButtonOperation(".") {
                 it.appendPoint()
             }
-        )
-        val EXP = ButtonDescription(
+
+        val EXP =
             ButtonOperation("exp") {
                 it.startExponent()
             }
-        )
-        val DIGIT = {d : Byte ->ButtonDescription(
-            ButtonOperation(d.toString()) {
-                println("DIGIT clicked")
+
+        val DIGIT = {d : Byte ->
+            ButtonOperation(d.toString(16).uppercase()) {
                 it.appendDigit(d)
             }
-        )}
-        val i = ButtonDescription(
+        }
+
+        fun digits(name : String, digits : List<Byte>) =
+            ButtonOperation(name) {
+                for( d in digits ) it.appendDigit(d)
+            }
+
+        val i =
             ButtonOperation("i") {
                 it.imaginary()
             }
-        )
-        val TODO = ButtonDescription(
-            ButtonOperation("TODO") {
-                it.todo()
-            },
+
+        val TODO =
             ButtonOperation("TODO") {
                 it.todo()
             }
-        )
     }
 
 }

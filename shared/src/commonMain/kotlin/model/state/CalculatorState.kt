@@ -298,4 +298,17 @@ data class CalculatorState(
             }
         }
 
+    fun roll(): CalculatorState =
+        ensureReady().run {
+            if( stack.isNotEmpty()) {
+                val newTop = stack.first()
+                val newStack = stack.drop(1) + top.toFormula()
+                copy( top = newTop, stack = newStack )
+            } else this
+        }
+    fun enteringExponent(): Boolean
+        = top is NumberBuilder && top.numberEntryState == NumberBuilder.NumberEntryState.EXPONENT
+
+
+
 }

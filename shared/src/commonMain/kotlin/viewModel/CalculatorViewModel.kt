@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import model.data.NumberDisplayMode
-import model.state.ButtonDescription
-import model.state.ButtonOperation
+import model.layouts.ButtonDescription
+import model.layouts.ButtonOperation
 import model.state.CalculatorModel
 import model.state.EvalMode
 
@@ -51,6 +51,7 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
                 it.copy( top =  calculatorModel.renderTop(),
                     stackStrings = calculatorModel.renderStack(),
                     envPairs = calculatorModel.renderEnv(),
+                    buttons = calculatorModel.buttons(),
                     base = calculatorModel.mode().base.toString(),
                     displayMode = calculatorModel.mode().displayMode.toString(),
                     evalMode = calculatorModel.mode().evalMode.toString(),

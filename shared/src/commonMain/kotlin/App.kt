@@ -1,7 +1,9 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +44,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
@@ -49,7 +52,8 @@ import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import kotlinx.coroutines.launch
 import model.data.NumberDisplayMode
-import model.state.ButtonDescription
+import model.layouts.Btns
+import model.layouts.ButtonDescription
 import model.state.CalculatorModel
 import model.state.EvalMode
 import viewModel.UIState
@@ -72,7 +76,6 @@ fun ImageAppTheme(
 }
 @Composable
 fun App(calculatorModel : CalculatorModel) {
-
     ImageAppTheme {
         val viewModel : CalculatorViewModel = getViewModel( Unit, viewModelFactory { CalculatorViewModel(calculatorModel) } )
         mainPage( viewModel )
@@ -165,7 +168,7 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                 uiState.buttons.forEach { rowOfStrings ->
                     Row( // of Buttons
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).weight(1.0f)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).weight(1.0f)
                     )
                     {
                         rowOfStrings.forEach { desc ->
@@ -215,46 +218,58 @@ private fun RowScope.mkButton(
     desc : ButtonDescription,
     shifted : Boolean
 ) {
+    val primarySemantics = !shifted  || desc.secondaryOperation == null
+    val disabled = if( primarySemantics ) ! desc.primaryOperation.enabled else ! desc.secondaryOperation!!.enabled
 
     fun onClick() {
-        when( desc.secondaryOperation ) {
-            null -> viewModel.click(desc.primaryOperation)
-            else ->
-                if( shifted ) viewModel.click(desc.secondaryOperation)
-                else viewModel.click(desc.primaryOperation)
-        }
+        if( primarySemantics )  viewModel.click(desc.primaryOperation)
+        else viewModel.click(desc.secondaryOperation!!)
     }
     val primaryLabelStr = desc.primaryOperation.name
-    val primaryColor = if( shifted && desc.secondaryOperation != null) Color.LightGray else Color.Yellow
+    val primaryColor = if( primarySemantics) Color.Yellow else Color.LightGray
+    val secondaryLabelStr = if(desc.secondaryOperation != null) desc.secondaryOperation.name else " "
+    val secondaryColor =  if( !primarySemantics ) Color.Yellow else Color.LightGray
+    val secondarySize =  if( primarySemantics) 0.4f else 0.6f
 
-    val backgroundColor = if( shifted ) Color.hsl(220.0f, 0.50f, 0.50f)
-                            else Color.hsl(220.0f, 0.50f, 0.34f)
+    val backgroundColor = if( disabled ) Color.hsl(220.0f, 0.30f, 0.30f)
+                            else if( shifted ) Color.hsl(220.0f, 0.80f, 0.50f)
+                            else Color.hsl(220.0f, 0.80f, 0.34f)
     Button(
         modifier = Modifier
-            .padding(horizontal=5.dp, vertical = 0.dp)
-            .shadow(20.dp, spotColor = Color.Black)
+            .shadow(10.dp, spotColor = Color.Black)
+            .padding(horizontal=4.dp, vertical = 0.dp)
             .fillMaxHeight()
             .fillMaxWidth().weight(desc.weight),
+        contentPadding = PaddingValues(
+            start = 10.dp,
+            top = 0.dp,
+            end = 10.dp,
+            bottom = 0.dp,
+        ),
         shape = AbsoluteCutCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(  backgroundColor = backgroundColor),
         onClick = {onClick()}
     ) {
         Column(
-            modifier = Modifier.padding(0.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(0.dp)//.border(1.dp, Color.Yellow)
+                .fillMaxHeight()
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
         ) {
-            if( desc.secondaryOperation != null ) {
-                val secondaryLabelStr = desc.secondaryOperation.name
-                val secondaryColor =  if( shifted ) Color.Yellow else Color.LightGray
-                AutoResizedText(
-                    text = secondaryLabelStr,
-                    color = secondaryColor,
-                    modifier = Modifier.background(Color.Transparent)
-                ) }
+            AutoResizedText(
+                text = secondaryLabelStr,
+                color = secondaryColor,
+                modifier = Modifier.background(Color.Transparent)//.border(3.dp, Color.Red)
+                    .fillMaxHeight(secondarySize)
+                    .fillMaxWidth()
+            )
             AutoResizedText(
                 text = primaryLabelStr,
                 color = primaryColor,
-                modifier = Modifier.background(Color.Transparent)
+                modifier = Modifier.background(Color.Transparent)//.border(3.dp, Color.LightGray)
+                    .fillMaxHeight(1.0f) // Use all remaining space.
+                    .fillMaxWidth()
             )
         }
     }
@@ -288,12 +303,13 @@ fun MemoryItemView(pair : Pair<String, String>, nameAction : (String) -> Unit, v
         )
         Spacer( Modifier.width(5.dp))
         Text(
+            pair.second,
             modifier = Modifier.fillMaxWidth()
                 .clickable {valueAction( pair.second )}
-                .padding(2.dp)
+                .padding(0.dp)
                 .background(Color.hsl(146.0f, 0.11f, 0.65f)),
-            text = pair.second,
             color = Color.Black,
+            textAlign = TextAlign.Center,
             fontSize = 20.sp,
             fontFamily = FontFamily.Monospace,
         )
@@ -312,14 +328,14 @@ fun AutoResizedText(
     var resizedTextStyle by remember { mutableStateOf(style) }
     val defaultFontSize = MaterialTheme.typography.body1.fontSize
     if( resizedTextStyle.fontSize.isUnspecified )
-        resizedTextStyle = resizedTextStyle.copy(fontSize = defaultFontSize)
+        resizedTextStyle = resizedTextStyle.copy(fontSize = defaultFontSize*1.0)
 
     var shouldDraw by remember { mutableStateOf(false) }
 
     Text(
         text = text,
         color = color,
-        modifier = modifier.drawWithContent {
+        modifier = modifier.padding(0.dp).drawWithContent {
                 if( shouldDraw ) { drawContent() }
         },
         softWrap = false,

@@ -1,11 +1,13 @@
 package model.state
 
+import model.layouts.ButtonDescription
 import model.data.BinaryOperator
 import model.data.NumberDisplayMode
+import model.layouts.makeLayout
 
 class CalculatorModel : Observable() {
+
     private var state = CalculatorState()
-    private var buttons : List<List<ButtonDescription>> = standardButtonLayout()
     private val errors : MutableList<String> = MutableList(0) { "" }
     private val undoStack = mutableListOf<CalculatorState>()
     private val redoStack = mutableListOf<CalculatorState>()
@@ -14,51 +16,6 @@ class CalculatorModel : Observable() {
     private fun emitError(message: String) {
         errors.add( "$message" )
         updateState(state)
-    }
-
-    private fun standardButtonLayout(): List<List<ButtonDescription>> {
-        return listOf(
-            listOf(
-                Descriptions.SHIFT,
-                Descriptions.EVAL,
-                Descriptions.STO,
-                Descriptions.X,
-                Descriptions.Y,
-                Descriptions.Z
-            ),
-            listOf(
-                Descriptions.ENTER,
-                Descriptions.DROP,
-                Descriptions.SWAP,
-                Descriptions.UNDO),
-            listOf(
-                Descriptions.i,
-                Descriptions.DIGIT(7),
-                Descriptions.DIGIT(8),
-                Descriptions.DIGIT(9),
-                Descriptions.DIVIDE
-            ),
-            listOf(
-                Descriptions.NEGATE,
-                Descriptions.DIGIT(4),
-                Descriptions.DIGIT(5),
-                Descriptions.DIGIT(6),
-                Descriptions.MULTIPLY
-            ),
-            listOf(
-                Descriptions.CLEAR,
-                Descriptions.DIGIT(1),
-                Descriptions.DIGIT(2),
-                Descriptions.DIGIT(3),
-                Descriptions.SUBTRACT
-            ),
-            listOf(
-                Descriptions.TODO,
-                Descriptions.DIGIT(0),
-                Descriptions.POINT,
-                Descriptions.EXP,
-                Descriptions.ADD)
-        )
     }
 
     fun renderTop() : String = state.renderTop({str -> emitError(str)})
@@ -71,13 +28,12 @@ class CalculatorModel : Observable() {
 
     fun mode() = state.mode
 
-    fun buttons() = buttons
+    fun buttons() = makeLayout(state.mode, state.enteringExponent())
 
     private fun updateState( newState : CalculatorState ) {
         redoStack.clear()
         undoStack += state
         state = newState
-        // Here the buttons should be updated based on the new state.
         notifyAllOservers()
     }
 
@@ -116,6 +72,9 @@ class CalculatorModel : Observable() {
     fun eval()  = updateState( state.eval({str -> emitError(str)}) )
     fun clear() = updateState( state.clear() )
     fun drop() = updateState( state.drop() )
+
+    fun roll() = updateState( state.roll() )
+
     fun imaginary() = updateState( state.imaginary() )
     fun undo() {
         if( undoStack.isNotEmpty() ) {
