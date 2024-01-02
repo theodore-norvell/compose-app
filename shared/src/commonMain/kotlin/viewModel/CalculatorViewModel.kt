@@ -43,7 +43,6 @@ class CalculatorViewModel(private val calculatorModel : CalculatorModel) : ViewM
     fun click(operation : ButtonOperation) { operation.clickAction(calculatorModel) }
 
     private fun updateUIState() {
-        println( "Updating UI state")
         viewModelScope.launch{
             _uiState.update {
                 // Strings to display

@@ -78,9 +78,14 @@ private fun replace( layout : List<List<ButtonDescription>>, p :ButtonDescriptio
     // Fail silently.
     return layout
 }
+
+private val cache : MutableMap<Pair<CalculatorModes,Boolean>,List<List<ButtonDescription>> >
+    = mutableMapOf()
 fun makeLayout( mode : CalculatorModes, exponent : Boolean )
 : List<List<ButtonDescription>> {
     // TODO make this a memo function.
+    val key = Pair(mode,exponent)
+    if( cache.containsKey(key)) return cache[key]!!
     var layout = BasicLayouts.basicLayout
     if( !exponent && (mode.base > 10 || mode.base == 2)) {
         val newRow = listOf(
@@ -123,5 +128,6 @@ fun makeLayout( mode : CalculatorModes, exponent : Boolean )
             layout = replace(layout, digits[i], disabled)
         }
     }
+    cache[key] = layout
     return layout
 }

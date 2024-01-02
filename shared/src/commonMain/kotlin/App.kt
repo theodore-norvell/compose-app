@@ -123,52 +123,52 @@ private fun mainPage(viewModel : CalculatorViewModel) {
             )
         }
     ) {
-            Column(
-                modifier = Modifier.background(Color.DarkGray).fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
-                val listState = rememberLazyListState()
+        Column(
+            modifier = Modifier.background(Color.DarkGray).fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
+            val listState = rememberLazyListState()
 
-                // See https://developer.android.com/jetpack/compose/side-effects
-                LaunchedEffect(uiState.stackStrings) {
-                    if (uiState.stackStrings.isNotEmpty()) listState.scrollToItem(uiState.stackStrings.size - 1)
-                }
-
-                // Scrollable stuff
-                val clipboardManager: ClipboardManager = LocalClipboardManager.current
-                val capture = { str: String -> clipboardManager.setText(AnnotatedString(str)) }
-                val pushVar = { name: String -> viewModel.makeVarRef(name) }
-                LazyColumn(
-                    verticalArrangement = Arrangement.Bottom,
-                    modifier = Modifier.fillMaxWidth()
-                        .fillMaxHeight(0.25f)
-                        .padding(horizontal = 5.dp),
-                    state = listState
-                ) {
-                    itemsIndexed(uiState.envPairs) { _, item ->
-                        MemoryItemView(
-                            item,
-                            pushVar,
-                            capture
-                        )
-                    }
-                    itemsIndexed(uiState.stackStrings) { _, item -> StackItemView(item, capture) }
-                }
-
-                // Top
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(0.dp),
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 5.dp),
-                    content = {
-                        StackItemView(uiState.top, capture)
-                    }
-                )
-                // Buttons
-                ButtonPanel(uiState, viewModel)
+            // See https://developer.android.com/jetpack/compose/side-effects
+            LaunchedEffect(uiState.stackStrings) {
+                if (uiState.stackStrings.isNotEmpty()) listState.scrollToItem(uiState.stackStrings.size - 1)
             }
+
+            // Scrollable stuff
+            val clipboardManager: ClipboardManager = LocalClipboardManager.current
+            val capture = { str: String -> clipboardManager.setText(AnnotatedString(str)) }
+            val pushVar = { name: String -> viewModel.makeVarRef(name) }
+            LazyColumn(
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier.fillMaxWidth()
+                    .fillMaxHeight(0.25f)
+                    .padding(horizontal = 5.dp),
+                state = listState
+            ) {
+                itemsIndexed(uiState.envPairs) { _, item ->
+                    MemoryItemView(
+                        item,
+                        pushVar,
+                        capture
+                    )
+                }
+                itemsIndexed(uiState.stackStrings) { _, item -> StackItemView(item, capture) }
+            }
+
+            // Top
+            Column(
+                verticalArrangement = Arrangement.spacedBy(0.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 5.dp),
+                content = {
+                    StackItemView(uiState.top, capture)
+                }
+            )
+            // Buttons
+            ButtonPanel(uiState, viewModel)
         }
+    }
     val scope = rememberCoroutineScope()
     LaunchedEffect(uiState.error) {
         scope.launch {
