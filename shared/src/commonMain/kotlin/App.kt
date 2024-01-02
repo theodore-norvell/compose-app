@@ -1,7 +1,7 @@
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -52,7 +52,6 @@ import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import kotlinx.coroutines.launch
 import model.data.NumberDisplayMode
-import model.layouts.Btns
 import model.layouts.ButtonDescription
 import model.state.CalculatorModel
 import model.state.EvalMode
@@ -61,7 +60,15 @@ import viewModel.CalculatorViewModel
 
 
 @Composable
-fun ImageAppTheme(
+fun App(calculatorModel : CalculatorModel) {
+    CalcAppTheme {
+        val viewModel : CalculatorViewModel = getViewModel( Unit, viewModelFactory { CalculatorViewModel(calculatorModel) } )
+        mainPage( viewModel )
+    }
+}
+
+@Composable
+private fun CalcAppTheme(
     content : @Composable () -> Unit
 ) {
     MaterialTheme(
@@ -74,17 +81,11 @@ fun ImageAppTheme(
         content()
     }
 }
-@Composable
-fun App(calculatorModel : CalculatorModel) {
-    ImageAppTheme {
-        val viewModel : CalculatorViewModel = getViewModel( Unit, viewModelFactory { CalculatorViewModel(calculatorModel) } )
-        mainPage( viewModel )
-    }
-}
 
 @Composable
 private fun mainPage(viewModel : CalculatorViewModel) {
     val uiState : UIState = viewModel.uiState.collectAsState().value
+
     val scaffoldState = rememberScaffoldState()
     Scaffold(
         scaffoldState = scaffoldState,
@@ -122,63 +123,52 @@ private fun mainPage(viewModel : CalculatorViewModel) {
             )
         }
     ) {
-        Column(
-            modifier = Modifier.background(Color.DarkGray).fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
-            val listState = rememberLazyListState()
-
-            // See https://developer.android.com/jetpack/compose/side-effects
-            LaunchedEffect(uiState.stackStrings) {
-                if (uiState.stackStrings.isNotEmpty()) listState.scrollToItem(uiState.stackStrings.size - 1)
-            }
-
-            // Scrollable stuff
-            val clipboardManager: ClipboardManager = LocalClipboardManager.current
-            val capture = {str : String -> clipboardManager.setText( AnnotatedString(str))}
-            val pushVar = {name : String -> viewModel.makeVarRef(name)}
-            LazyColumn(
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier.fillMaxWidth()
-                    .fillMaxHeight(0.25f)
-                    .padding(horizontal = 5.dp),
-                state = listState
-            ) {
-                itemsIndexed(uiState.envPairs) { _, item -> MemoryItemView(item, pushVar, capture) }
-                itemsIndexed(uiState.stackStrings) { _, item -> StackItemView(item, capture) }
-            }
-
-            // Top
             Column(
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-                modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                content = {
-                    StackItemView(uiState.top, capture)
-                }
-            )
+                modifier = Modifier.background(Color.DarkGray).fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // See https://medium.com/@gsaillen95/how-to-create-a-jump-to-top-feature-with-jetpack-compose-2ed487b30087
+                val listState = rememberLazyListState()
 
-            // Buttons
-            Column( // Of Button Rows
-                verticalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp)
-            )
-            {
-                uiState.buttons.forEach { rowOfStrings ->
-                    Row( // of Buttons
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).weight(1.0f)
-                    )
-                    {
-                        rowOfStrings.forEach { desc ->
-                            mkButton(viewModel, desc, uiState.shifted)
-                        }
-                    }
+                // See https://developer.android.com/jetpack/compose/side-effects
+                LaunchedEffect(uiState.stackStrings) {
+                    if (uiState.stackStrings.isNotEmpty()) listState.scrollToItem(uiState.stackStrings.size - 1)
                 }
+
+                // Scrollable stuff
+                val clipboardManager: ClipboardManager = LocalClipboardManager.current
+                val capture = { str: String -> clipboardManager.setText(AnnotatedString(str)) }
+                val pushVar = { name: String -> viewModel.makeVarRef(name) }
+                LazyColumn(
+                    verticalArrangement = Arrangement.Bottom,
+                    modifier = Modifier.fillMaxWidth()
+                        .fillMaxHeight(0.25f)
+                        .padding(horizontal = 5.dp),
+                    state = listState
+                ) {
+                    itemsIndexed(uiState.envPairs) { _, item ->
+                        MemoryItemView(
+                            item,
+                            pushVar,
+                            capture
+                        )
+                    }
+                    itemsIndexed(uiState.stackStrings) { _, item -> StackItemView(item, capture) }
+                }
+
+                // Top
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 5.dp),
+                    content = {
+                        StackItemView(uiState.top, capture)
+                    }
+                )
+                // Buttons
+                ButtonPanel(uiState, viewModel)
             }
         }
-    }
     val scope = rememberCoroutineScope()
     LaunchedEffect(uiState.error) {
         scope.launch {
@@ -191,6 +181,74 @@ private fun mainPage(viewModel : CalculatorViewModel) {
                 viewModel.cancelError()
             }
         }
+    }
+}
+
+@Composable
+private fun ButtonPanel(uiState: UIState, viewModel: CalculatorViewModel) {
+    BoxWithConstraints {
+        // Buttons
+        if (maxWidth < maxHeight)
+            Column( // Of Button Rows
+                verticalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp)
+            )
+            {
+                uiState.buttons.forEach { rowOfStrings ->
+                    Row( // of Buttons
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            .weight(1.0f)
+                    )
+                    {
+                        rowOfStrings.forEach { desc ->
+                            mkButton(viewModel, desc, uiState.shifted)
+                        }
+                    }
+                }
+            }
+        else
+            Row {
+                val splitPoint = 4
+                // First Column
+                Column( // Of Button Rows
+                    verticalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxHeight().fillMaxWidth(0.5f)
+                        .padding(horizontal = 10.dp)
+                )
+                {
+                    uiState.buttons.take(splitPoint).forEach { rowOfStrings ->
+                        Row( // of Buttons
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                                .weight(1.0f)
+                        )
+                        {
+                            rowOfStrings.forEach { desc ->
+                                mkButton(viewModel, desc, uiState.shifted)
+                            }
+                        }
+                    }
+                }
+                Column( // Of Button Rows
+                    verticalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp)
+                )
+                {
+                    uiState.buttons.drop(4).forEach { rowOfStrings ->
+                        Row( // of Buttons
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                                .weight(1.0f)
+                        )
+                        {
+                            rowOfStrings.forEach { desc ->
+                                mkButton(viewModel, desc, uiState.shifted)
+                            }
+                        }
+                    }
+                }
+            }
     }
 }
 
@@ -226,14 +284,14 @@ private fun RowScope.mkButton(
         else viewModel.click(desc.secondaryOperation!!)
     }
     val primaryLabelStr = desc.primaryOperation.name
-    val primaryColor = if( primarySemantics) Color.Yellow else Color.LightGray
+    val primaryColor = if( primarySemantics) desc.enabledTextColor else desc.disabledTextColor
     val secondaryLabelStr = if(desc.secondaryOperation != null) desc.secondaryOperation.name else " "
-    val secondaryColor =  if( !primarySemantics ) Color.Yellow else Color.LightGray
+    val secondaryColor =  if( !primarySemantics ) desc.enabledTextColor else desc.disabledTextColor
     val secondarySize =  if( primarySemantics) 0.4f else 0.6f
 
-    val backgroundColor = if( disabled ) Color.hsl(220.0f, 0.30f, 0.30f)
-                            else if( shifted ) Color.hsl(220.0f, 0.80f, 0.50f)
-                            else Color.hsl(220.0f, 0.80f, 0.34f)
+    val backgroundColor = if( disabled ) desc.disabledBGColor
+                            else if( shifted ) desc.shiftedEnabledBGColor
+                            else desc.enabledBGColor
     Button(
         modifier = Modifier
             .shadow(10.dp, spotColor = Color.Black)

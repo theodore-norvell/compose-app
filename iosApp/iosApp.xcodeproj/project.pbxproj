@@ -334,6 +334,7 @@
 					"shared\n",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "${BUNDLE_ID}${TEAM_ID}";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.universalalgorithms.universal-calculator";
 				PRODUCT_NAME = "${APP_NAME}";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -370,6 +371,7 @@
 					"shared\n",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "${BUNDLE_ID}${TEAM_ID}";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.universalalgorithms.universal-calculator";
 				PRODUCT_NAME = "${APP_NAME}";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
