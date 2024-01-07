@@ -37,11 +37,10 @@ class NumberBuilder private constructor (
         }
     }
 
-    fun convertBaseTo( base : Int, prefs: DisplayAndComputePreferences ) : NumberBuilder {
+    private fun convertBaseTo(base : Int, prefs: DisplayAndComputePreferences ) : NumberBuilder {
         if( base == this.base ) return this
         else {
             val number =  FlexNumber.create(isNegative, this.base, lengthAfterPoint, digits, exponent*exponentSign)
-            // TODO Change 1024 to computePrefs.size
             val inNewBase = number.convertedToBase( prefs )
             val newDigits = inNewBase.digits
             val newLengthAfterPoint = newDigits.size - inNewBase.exponent

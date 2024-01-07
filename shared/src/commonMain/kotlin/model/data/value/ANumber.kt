@@ -19,12 +19,28 @@ sealed class ANumber {
     abstract fun isOne() : Boolean
     abstract fun negated() : ANumber
 
-    abstract fun convertedToBase( prefs: DisplayAndComputePreferences) : ANumber
-    abstract fun plus(other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+    abstract fun asFlexible(prefs: DisplayAndComputePreferences): FlexNumber
 
-    abstract fun times( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+    abstract fun asIEEE(prefs: DisplayAndComputePreferences): IEEENumber
 
-    abstract fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
+    fun plus(other: ANumber, prefs: DisplayAndComputePreferences) : ANumber =
+        when( prefs.numberKind ) {
+            is Flexible ->  this.asFlexible(prefs).plus( other.asFlexible(prefs), prefs )
+            IEEE -> this.asIEEE( prefs ).plus( other.asIEEE(prefs), prefs )
+        }
+
+
+    fun times( other : ANumber, prefs: DisplayAndComputePreferences ) : ANumber =
+        when( prefs.numberKind ) {
+            is Flexible ->  this.asFlexible(prefs).times( other.asFlexible(prefs), prefs )
+            IEEE -> this.asIEEE( prefs ).times( other.asIEEE(prefs), prefs )
+        }
+
+    fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber  =
+        when( prefs.numberKind ) {
+            is Flexible ->  this.asFlexible(prefs).dividedBy( other.asFlexible(prefs), prefs )
+            IEEE -> this.asIEEE( prefs ).dividedBy( other.asIEEE(prefs), prefs )
+        }
 
 }
 sealed class AFixedOrFlexibleNumber constructor(
@@ -76,13 +92,6 @@ sealed class AFixedOrFlexibleNumber constructor(
 
     abstract override fun negated() : ANumber
 
-    abstract override fun convertedToBase( prefs: DisplayAndComputePreferences) : ANumber
-
-    abstract override fun plus(other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
-
-    abstract override fun times( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
-
-    abstract override fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber
 }
 
 class FlexNumber
@@ -220,6 +229,13 @@ class FlexNumber
         return "FlexNumber($isNegative,$base,$digits,$exponent)"
     }
 
+    override fun asFlexible(prefs: DisplayAndComputePreferences): FlexNumber = this
+
+    override fun asIEEE(prefs: DisplayAndComputePreferences): IEEENumber {
+        TODO("Not yet implemented")
+    }
+
+
     /** Divide by a small natural number
      *
      * result.first is the quotient
@@ -296,7 +312,7 @@ class FlexNumber
 
     fun digitsAfterPoint() = max(0,digits.size-exponent)
 
-    override fun convertedToBase( prefs: DisplayAndComputePreferences) : FlexNumber {
+    fun convertedToBase( prefs: DisplayAndComputePreferences) : FlexNumber {
         val b = prefs.base
         val size = prefs.sizeLimit
         if( b == base ) {
@@ -339,7 +355,7 @@ class FlexNumber
         }
     }
 
-    private fun plus(other : FlexNumber, prefs: DisplayAndComputePreferences ) : ANumber {
+    fun plus(other : FlexNumber, prefs: DisplayAndComputePreferences ) : ANumber {
         val base = prefs.base
         val sizeLimit = prefs.sizeLimit
         val x = other.convertedToBase( prefs)
@@ -400,7 +416,7 @@ class FlexNumber
         return result
     }
 
-    private fun times( q : FlexNumber, prefs: DisplayAndComputePreferences ) : FlexNumber {
+    fun times( q : FlexNumber, prefs: DisplayAndComputePreferences ) : FlexNumber {
         val a = this.convertedToBase(prefs)
         val aSize = a.digits.size
         val b = q.convertedToBase(prefs)
@@ -434,7 +450,7 @@ class FlexNumber
 
     }
 
-    private fun dividedBy(q : FlexNumber, prefs: DisplayAndComputePreferences ) : FlexNumber {
+    fun dividedBy(q : FlexNumber, prefs: DisplayAndComputePreferences ) : FlexNumber {
         // Precondition q is not zero
         check( ! q.isZero() )
         val a = this.convertedToBase(prefs)
@@ -517,18 +533,42 @@ class FlexNumber
 
     }
 
-    override fun plus(other: ANumber, prefs: DisplayAndComputePreferences) : ANumber =
-        when( other ) {
-            is FlexNumber ->  this.plus( other, prefs )
-        }
-    override fun times( other : ANumber, prefs: DisplayAndComputePreferences ) : ANumber =
-        when (other) {
-            is FlexNumber -> this.times( other, prefs )
-        }
 
-    override fun dividedBy( other : ANumber, prefs: DisplayAndComputePreferences) : ANumber  =
-        when (other) {
-            is FlexNumber -> this.dividedBy( other, prefs )
-        }
+}
 
+final class IEEENumber(
+    val value : Double
+) : ANumber() {
+    override fun render(displayPrefs: DisplayAndComputePreferences): String {
+        // TODO Needs to use preferences
+        return value.toString()
+    }
+
+    override fun isZero(): Boolean {
+        return value == 0.0
+    }
+
+    override fun isOne(): Boolean {
+        return value == 1.0
+    }
+
+    override fun negated(): ANumber {
+        return IEEENumber(value)
+    }
+
+    override fun asFlexible(prefs: DisplayAndComputePreferences): FlexNumber {
+        TODO("Not yet implemented")
+    }
+
+    override fun asIEEE(prefs: DisplayAndComputePreferences): IEEENumber = this
+
+    fun plus(other: IEEENumber, prefs: DisplayAndComputePreferences) : IEEENumber =
+        IEEENumber(this.value + other.value )
+
+
+    fun times( other : IEEENumber, prefs: DisplayAndComputePreferences ) : IEEENumber =
+        IEEENumber(this.value * other.value )
+
+    fun dividedBy( other : IEEENumber, prefs: DisplayAndComputePreferences) : IEEENumber  =
+        IEEENumber(this.value / other.value )
 }
