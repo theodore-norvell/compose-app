@@ -23,8 +23,6 @@ fun applyBinaryOperator(op : BinaryOperator,
             return default
         }
         else -> {
-            // Both can be treated as floating point.
-            // Apply the operator.
             when (op) {
                 BinaryOperator.ADD ->
                     when( val resultValue =  r.add(l, prefs ) ) {
@@ -54,6 +52,11 @@ fun applyBinaryOperator(op : BinaryOperator,
                         else -> return ValueFormula( resultValue )
                     }
 
+                BinaryOperator.POW ->
+                    when( val resultValue =  r.pow(l, prefs ) ) {
+                        // null indicates failure
+                        null -> return ErrorFormula("incompatible operands", default)
+                        else -> return ValueFormula( resultValue ) }
             }
         }
     }

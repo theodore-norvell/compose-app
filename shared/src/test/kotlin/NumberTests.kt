@@ -14,29 +14,28 @@ class NumberTests {
         maxLengthAfterPoint = 10,
         groupLengthAfter = 3,
         groupLengthBefore = 3,
-        separatorBefore = ',',
-        separatorAfter = ' ',
-        radixPoint = '.'
+        separatorBefore = ",",
+        separatorAfter = " ",
+        radixPoint = "."
     )
     @Test fun makeFlexNumber() {
-        val env = Environment()
         val zero = NumberBuilder.zero(10)
         assertEquals( "0", zero.render(prefs))
-        assertEquals( "0.", zero.toFormula().render(prefs))
+        assertEquals( "0", zero.toFormula().render(prefs))
 
         assertTrue( zero.canAppendDigit(10, 1))
         val negativeZero = zero.negate()
         assertEquals( "-0", negativeZero.render(prefs))
-        assertEquals( "0.", negativeZero.toFormula().render(prefs))
+        assertEquals( "0", negativeZero.toFormula().render(prefs))
 
         assertTrue( negativeZero.canAppendDigit(10, 1))
         val one = zero.appendDigit(10,1)
         assertEquals( "1", one.render(prefs))
-        assertEquals( "1.", one.toFormula().render(prefs))
+        assertEquals( "1", one.toFormula().render(prefs))
 
         val onePoint = one.appendPoint()
         assertEquals( "1.", onePoint.render(prefs))
-        assertEquals( "1.", onePoint.toFormula().render(prefs))
+        assertEquals( "1", onePoint.toFormula().render(prefs))
 
         assertTrue( onePoint.canAppendDigit(10, 1) )
         val onePointTwo = onePoint.appendDigit(10, 2)
@@ -103,14 +102,14 @@ class NumberTests {
 
     @Test fun renderInVariousBases() {
         val base2Prefs = prefs.copy( base = 2, mode = NumberDisplayMode.NoExponent,
-                maxDigits = 100, groupLengthBefore = 4, separatorBefore = ' ',
-                groupLengthAfter = 4, separatorAfter = ' ')
+                maxDigits = 100, groupLengthBefore = 4, separatorBefore = " ",
+                groupLengthAfter = 4, separatorAfter = " ")
         val base7Prefs = prefs.copy( base = 7, mode = NumberDisplayMode.NoExponent)
         val base8Prefs = prefs.copy( base = 8, mode = NumberDisplayMode.NoExponent)
         val base10Prefs = prefs
         val base16Prefs = prefs.copy( base = 16, mode = NumberDisplayMode.NoExponent,
-            maxDigits = 25, groupLengthBefore = 2, separatorBefore = ' ',
-            groupLengthAfter = 2, separatorAfter = ' ')
+            maxDigits = 25, groupLengthBefore = 2, separatorBefore = " ",
+            groupLengthAfter = 2, separatorAfter = " ")
 
         // 12 base 10
         var testNumber = NumberBuilder.zero(10)
@@ -122,11 +121,11 @@ class NumberTests {
         var renderedInBase8 = testNumber.render(base8Prefs)
         var renderedInBase10 = testNumber.render(prefs)
         var renderedInBase16 = testNumber.render(base16Prefs)
-        assertEquals("1100.", renderedInBase2)
-        assertEquals("15.", renderedInBase7)
-        assertEquals("14.", renderedInBase8)
-        assertEquals("12.", renderedInBase10)
-        assertEquals("C.", renderedInBase16)
+        assertEquals("1100", renderedInBase2)
+        assertEquals("15", renderedInBase7)
+        assertEquals("14", renderedInBase8)
+        assertEquals("12", renderedInBase10)
+        assertEquals("C", renderedInBase16)
 
         // ABCD123 base 16
         testNumber = NumberBuilder.zero(16)
@@ -144,11 +143,11 @@ class NumberTests {
         renderedInBase8 = testNumber.render(base8Prefs)
         renderedInBase10 = testNumber.render(prefs)
         renderedInBase16 = testNumber.render(base16Prefs)
-        assertEquals("1010 1011 1100 1101 0001 0010 0011.", renderedInBase2)
-        assertEquals("4,315,135,234.", renderedInBase7)
-        assertEquals("1,257,150,443.", renderedInBase8)
-        assertEquals("180,146,467.", renderedInBase10)
-        assertEquals("A BC D1 23.", renderedInBase16)
+        assertEquals("1010 1011 1100 1101 0001 0010 0011", renderedInBase2)
+        assertEquals("4,315,135,234", renderedInBase7)
+        assertEquals("1,257,150,443", renderedInBase8)
+        assertEquals("180,146,467", renderedInBase10)
+        assertEquals("A BC D1 23", renderedInBase16)
 
         // 11110000.101 base 2
         testNumber = NumberBuilder.zero(2)
@@ -185,9 +184,10 @@ class NumberTests {
             maxLengthAfterPoint = 20,
             groupLengthBefore = 2,
             groupLengthAfter = 2,
-            separatorBefore = ' ',
-            separatorAfter = ' ',
-            radixPoint = '.'
+            separatorBefore = " ",
+            separatorAfter = " ",
+            radixPoint = ".",
+            sizeLimit = 100
         )
         val base10Prefs = DisplayAndComputePreferences(
             base = 10,
@@ -196,9 +196,10 @@ class NumberTests {
             maxLengthAfterPoint = 20,
             groupLengthBefore = 3,
             groupLengthAfter = 3,
-            separatorBefore = ',',
-            separatorAfter = ' ',
-            radixPoint = '.'
+            separatorBefore = ",",
+            separatorAfter = " ",
+            radixPoint = ".",
+            sizeLimit = 100
         )
         val testNumber = NumberBuilder.zero(10)
             .appendDigit(10, 4)

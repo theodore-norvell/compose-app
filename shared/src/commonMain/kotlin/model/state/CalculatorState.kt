@@ -12,6 +12,7 @@ import model.data.formula.ValueFormula
 import model.data.formula.VariableReference
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
+import model.data.value.NormalFlexNumber
 
 enum class EntryState {
     NORMAL, AFTER_ENTER
@@ -55,9 +56,9 @@ data class CalculatorState(
                     maxLengthAfterPoint = 20,
                     groupLengthBefore = 4,
                     groupLengthAfter = 4,
-                    separatorBefore = ' ',
-                    separatorAfter = ' ',
-                    radixPoint = '.',
+                    separatorBefore = " ",
+                    separatorAfter = " ",
+                    radixPoint = ".",
                     sizeLimit = 255
                 )
             7, 8 ->
@@ -68,9 +69,9 @@ data class CalculatorState(
                     maxLengthAfterPoint = 20,
                     groupLengthBefore = 3,
                     groupLengthAfter = 3,
-                    separatorBefore = ' ',
-                    separatorAfter = ' ',
-                    radixPoint = '.',
+                    separatorBefore = " ",
+                    separatorAfter = " ",
+                    radixPoint = ".",
                     sizeLimit = 255
                 )
             16 ->
@@ -81,9 +82,9 @@ data class CalculatorState(
                     maxLengthAfterPoint = 20,
                     groupLengthBefore = 2,
                     groupLengthAfter = 2,
-                    separatorBefore = ' ',
-                    separatorAfter = ' ',
-                    radixPoint = '.',
+                    separatorBefore = " ",
+                    separatorAfter = " ",
+                    radixPoint = ".",
                     sizeLimit = 255
                 )
             else ->
@@ -94,9 +95,9 @@ data class CalculatorState(
                     maxLengthAfterPoint = 20,
                     groupLengthBefore = 3,
                     groupLengthAfter = 3,
-                    separatorBefore = ',',
-                    separatorAfter = ' ',
-                    radixPoint = '.',
+                    separatorBefore = ",",
+                    separatorAfter = " ",
+                    radixPoint = ".",
                     sizeLimit = 255
                 )
         }
@@ -281,8 +282,8 @@ data class CalculatorState(
                 copy(top = top.imaginary())
             }
             else  -> {
-                val zero = FlexNumber.mkZero( mode.base )
-                val one = FlexNumber.mkOne( mode.base )
+                val zero = NormalFlexNumber.mkZero( mode.base )
+                val one = NormalFlexNumber.mkOne( mode.base )
                 val newTop = ValueFormula( ComplexNumberValue(zero,one))
                 push( newTop )
             }
@@ -308,6 +309,7 @@ data class CalculatorState(
         }
     fun enteringExponent(): Boolean
         = top is NumberBuilder && top.numberEntryState == NumberBuilder.NumberEntryState.EXPONENT
+
 
 
 

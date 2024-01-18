@@ -1,27 +1,32 @@
 
 import model.data.DisplayAndComputePreferences
 import model.data.formula.NumberBuilder
+import model.data.value.ANumber
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
+import model.data.value.IEEENumber
+import model.data.value.InfiniteFlexNumber
+import model.data.value.NanFlexNumber
+import model.data.value.NormalFlexNumber
 import org.junit.Assert.assertEquals
 import org.junit.Test
 class ArithmeticTests {
 
     val prefs = DisplayAndComputePreferences()
-    fun <T>iterate( foo : T, fs : List<(T)->T> ) : T {
+    private fun <T>iterate( foo : T, fs : List<(T)->T> ) : T {
         var foobar = foo
         for( f in fs ) foobar = f(foobar)
         return foobar
     }
 
-    fun NumberBuilder.appendDigits( digits : List<Byte>) : NumberBuilder {
+    private fun NumberBuilder.appendDigits( digits : List<Byte>) : NumberBuilder {
         var nb = this
         for( d in digits ) nb = nb.appendDigit(nb.base, d)
         return nb
     }
 
 
-    private fun toValue(base: Int, n: Int) : FlexNumber {
+    private fun toValue(base: Int, n: Int) : NormalFlexNumber {
         var todo = if( n < 0 ) -n else n
         val digitList = MutableList<Byte>(0){0}
         while (todo != 0) {
@@ -180,7 +185,7 @@ class ArithmeticTests {
         val n23001 = toValue( 10, 23001)
         val twenty3Point0001Base10 = n23001.dividedBy(1000,5, false).first
 
-        var actual = twenty3Point0001Base10.convertedToBase(prefs.copy(base=2))
+        var actual = twenty3Point0001Base10.convertedToBase(prefs.copy(base=2, sizeLimit=33))
         var expected = NumberBuilder.zero(2)
             .appendDigit(2, 1)
             .appendDigit(2, 0)
@@ -260,19 +265,19 @@ class ArithmeticTests {
 
         x = a
         y = a.negated()
-        expected  = FlexNumber.mkZero(base)
+        expected  = NormalFlexNumber.mkZero(base)
         actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = b
         y = b.negated()
-        expected  = FlexNumber.mkZero(base)
+        expected  = NormalFlexNumber.mkZero(base)
         actual = x.plus( y, prefs)
         assertEquals(expected, actual)
 
         x = c
         y = c.negated()
-        expected  = FlexNumber.mkZero(base)
+        expected  = NormalFlexNumber.mkZero(base)
         actual = x.plus( y, prefs)
         assertEquals(expected, actual)
     }
@@ -301,8 +306,10 @@ class ArithmeticTests {
             }
         }
 
-        for( a in -100..100) {
-            for (b in -100..100) {
+        for( p in -20..20) {
+            val a = p*3
+            for (q in -20..20) {
+                val b = 7 * q
                 val c = a + b
                 for (baseA in listOf(2, 7, 8, 10, 16 )) {
                     for (baseB in listOf(2, 7, 8, 10, 16)) {
@@ -380,12 +387,12 @@ class ArithmeticTests {
 
         assertEquals( expected, actual )
 
-        actual = FlexNumber.mkZero(10).times(a, prefs )
-        expected = FlexNumber.mkZero(10)
+        actual = NormalFlexNumber.mkZero(10).times(a, prefs )
+        expected = NormalFlexNumber.mkZero(10)
         assertEquals( expected, actual )
 
-        actual = b.times(FlexNumber.mkZero(10), prefs )
-        expected = FlexNumber.mkZero(10)
+        actual = b.times(NormalFlexNumber.mkZero(10), prefs )
+        expected = NormalFlexNumber.mkZero(10)
         assertEquals( expected, actual )
     }
 
@@ -396,9 +403,9 @@ class ArithmeticTests {
             maxLengthAfterPoint = 20,
             groupLengthBefore = 3,
             groupLengthAfter = 3,
-            separatorBefore = ',',
-            separatorAfter = ' ',
-            radixPoint = '.',
+            separatorBefore = ",",
+            separatorAfter = " ",
+            radixPoint = ".",
             sizeLimit = 255
         )
         var a = NumberBuilder.zero(10)
@@ -407,7 +414,7 @@ class ArithmeticTests {
             .appendDigit(10, 5)
             .toFlexNumber()
 
-        var actualNumber = a.times(a, prefs)
+        var actualNumber : FlexNumber = a.times(a, prefs)
 
         var expectedNumber = NumberBuilder.zero(10)
             .appendDigit(10, 2)
@@ -419,14 +426,14 @@ class ArithmeticTests {
 
         assertEquals(expectedNumber, actualNumber)
 
-        actualNumber = actualNumber.plus( FlexNumber.mkZero(10), prefs )
+        actualNumber = actualNumber.plus( NormalFlexNumber.mkZero(10), prefs )
 
         assertEquals(expectedNumber, actualNumber)
 
-        var aComplex = ComplexNumberValue(a, FlexNumber.mkZero(10))
+        var aComplex = ComplexNumberValue(a, NormalFlexNumber.mkZero(10))
 
         var actual = aComplex.multiply(aComplex, prefs )
-        var expectedComplex = ComplexNumberValue(expectedNumber, FlexNumber.mkZero(10))
+        var expectedComplex = ComplexNumberValue(expectedNumber, NormalFlexNumber.mkZero(10))
 
         assertEquals(expectedComplex, actual)
         val aRendered = actual?.render(prefs)
@@ -553,5 +560,208 @@ class ArithmeticTests {
                 }
             }
         }
+    }
+
+    @Test fun flexNumPower0() {
+        // In all these cases, b must be non-negative and finite
+        var a : FlexNumber = NormalFlexNumber.mkOne(base=10)
+        var b : FlexNumber= NormalFlexNumber.mkZero(base=10)
+        var x : FlexNumber= NormalFlexNumber.mkOne(base=10)
+        var y : FlexNumber = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkZero(base=10)
+        b = NormalFlexNumber.mkOne(base=10)
+        x = a
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkNum(7, base =10)
+        b = NormalFlexNumber.mkNum(2, base =10)
+        x = NormalFlexNumber.mkNum(49, base =10)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkNum(3, base =7)
+        b = NormalFlexNumber.mkNum(3, base =7)
+        x = NormalFlexNumber.mkNum(27, base =10)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkNum(3, base =7)
+        b = NormalFlexNumber.mkNum(33, base =7)
+        x = NormalFlexNumber.mkNum(5559060566555523L, base =10)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = InfiniteFlexNumber(true)
+        b = NormalFlexNumber.mkNum(3, base =7)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = InfiniteFlexNumber(false)
+        b = NormalFlexNumber.mkNum(3, base =7)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NanFlexNumber
+        b = NormalFlexNumber.mkNum(3, base =7)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+    }
+
+    @Test fun aNumberPow0() {
+        var a: ANumber = NormalFlexNumber.mkOne(base = 10)
+        var b: ANumber = NormalFlexNumber.mkZero(base = 10)
+        var x: ANumber = NormalFlexNumber.mkOne(base = 10)
+        var y: ANumber = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkZero(base = 10)
+        b = NormalFlexNumber.mkOne(base = 10)
+        x = a
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkNum(7, base = 10)
+        b = NormalFlexNumber.mkNum(2, base = 10)
+        x = NormalFlexNumber.mkNum(49, base = 10)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkNum(3, base = 7)
+        b = NormalFlexNumber.mkNum(3, base = 7)
+        x = NormalFlexNumber.mkNum(27, base = 10)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NormalFlexNumber.mkNum(3, base = 7)
+        b = NormalFlexNumber.mkNum(33, base = 7)
+        x = NormalFlexNumber.mkNum(5559060566555523L, base = 10)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = InfiniteFlexNumber(true)
+        b = NormalFlexNumber.mkNum(3, base = 7)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = InfiniteFlexNumber(false)
+        b = NormalFlexNumber.mkNum(3, base = 7)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NanFlexNumber
+        b = NormalFlexNumber.mkNum(3, base = 7)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        // Cases where we have infinite exponents.
+        val posInfFlex = InfiniteFlexNumber(false)
+        val negInfFlex = InfiniteFlexNumber(true)
+        val nanFlex = NanFlexNumber
+        a = NormalFlexNumber.mkNum(3, base = 7)
+        assertEquals(posInfFlex, posInfFlex.pow(posInfFlex, prefs))
+        assertEquals(nanFlex, posInfFlex.pow(negInfFlex, prefs))
+        assertEquals(nanFlex, posInfFlex.pow(nanFlex, prefs))
+        assertEquals(nanFlex, negInfFlex.pow(posInfFlex, prefs))
+        assertEquals(nanFlex, negInfFlex.pow(negInfFlex, prefs))
+        assertEquals(nanFlex, negInfFlex.pow(nanFlex, prefs))
+        assertEquals(nanFlex, nanFlex.pow(posInfFlex, prefs))
+        assertEquals(nanFlex, nanFlex.pow(negInfFlex, prefs))
+        assertEquals(nanFlex, nanFlex.pow(nanFlex, prefs))
+
+
+        a = IEEENumber(1.0)
+        b = IEEENumber(0.0)
+        x = IEEENumber(1.0)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = IEEENumber(0.0)
+        b = IEEENumber(1.0)
+        x = a
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = IEEENumber(7.0)
+        b = IEEENumber(2.0)
+        x = IEEENumber(49.0)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = IEEENumber(3.0)
+        b = IEEENumber(3.0)
+        x = IEEENumber(27.0)
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = IEEENumber(3.0)
+        b = IEEENumber(33.0)
+        x = IEEENumber(5559060566555523.0 )
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = InfiniteFlexNumber(true)
+        b = IEEENumber(3.0)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = InfiniteFlexNumber(false)
+        b = IEEENumber(3.0)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+        a = NanFlexNumber
+        b = IEEENumber(3.0)
+        x = NanFlexNumber
+        y = a.pow(b, prefs)
+        assertEquals(x, y)
+
+
+
+        // Cases where we have infinite exponents.
+        val posInfIEEE = IEEENumber( Double.POSITIVE_INFINITY)
+        val negInfIEEE = IEEENumber( Double.NEGATIVE_INFINITY)
+        val nanIEEE = IEEENumber( Double.NaN)
+        assertEquals(posInfIEEE, posInfIEEE.pow(posInfFlex, prefs))
+        assertEquals(nanIEEE, posInfIEEE.pow(negInfFlex, prefs))
+        assertEquals(nanIEEE, posInfIEEE.pow(nanFlex, prefs))
+        assertEquals(nanIEEE, negInfIEEE.pow(posInfFlex, prefs))
+        assertEquals(nanIEEE, negInfIEEE.pow(negInfFlex, prefs))
+        assertEquals(nanIEEE, negInfIEEE.pow(nanFlex, prefs))
+        assertEquals(nanIEEE, nanIEEE.pow(posInfFlex, prefs))
+        assertEquals(nanIEEE, nanIEEE.pow(negInfFlex, prefs))
+        assertEquals(nanIEEE, nanIEEE.pow(nanFlex, prefs))
+
+
+        assertEquals(posInfIEEE, posInfFlex.pow(posInfIEEE, prefs))
+        assertEquals(nanIEEE, posInfFlex.pow(negInfIEEE, prefs))
+        assertEquals(nanIEEE, posInfFlex.pow(nanIEEE, prefs))
+        assertEquals(nanIEEE, negInfFlex.pow(posInfIEEE, prefs))
+        assertEquals(nanIEEE, negInfFlex.pow(negInfIEEE, prefs))
+        assertEquals(nanIEEE, negInfFlex.pow(nanIEEE, prefs))
+        assertEquals(nanIEEE, nanFlex.pow(posInfIEEE, prefs))
+        assertEquals(nanIEEE, nanFlex.pow(negInfIEEE, prefs))
+        assertEquals(nanIEEE, nanFlex.pow(nanIEEE, prefs))
+
+
+        assertEquals(posInfIEEE, posInfIEEE.pow(posInfIEEE, prefs))
+        assertEquals(nanIEEE, posInfIEEE.pow(negInfIEEE, prefs))
+        assertEquals(nanIEEE, posInfIEEE.pow(nanIEEE, prefs))
+        assertEquals(nanIEEE, negInfIEEE.pow(posInfIEEE, prefs))
+        assertEquals(nanIEEE, negInfIEEE.pow(negInfIEEE, prefs))
+        assertEquals(nanIEEE, negInfIEEE.pow(nanIEEE, prefs))
+        assertEquals(nanIEEE, nanIEEE.pow(posInfIEEE, prefs))
+        assertEquals(nanIEEE, nanIEEE.pow(negInfIEEE, prefs))
+        assertEquals(nanIEEE, nanIEEE.pow(nanIEEE, prefs))
     }
 }

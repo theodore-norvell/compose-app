@@ -3,7 +3,7 @@ package model.data.value
 import model.data.DisplayAndComputePreferences
 
 object NumberRendering {
-    private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: Char, excessAtStart : Boolean) {
+    private fun separate(str: String, finalBuilder: StringBuilder, groupLength : Int, separator: String, excessAtStart : Boolean) {
         val wholeGroups = str.length / groupLength
         val rem = str.length - groupLength*wholeGroups
         var i = 0

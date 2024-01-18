@@ -33,7 +33,7 @@ private object BasicLayouts {
             Btns.SWAP_ROLL,
             Btns.TODO,
             Btns.TODO,
-            Btns.TODO),
+            Btns.POW),
         listOf(
             Btns.UNDO_REDO,
             Btns.D7,

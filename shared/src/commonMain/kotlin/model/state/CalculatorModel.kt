@@ -67,10 +67,15 @@ class CalculatorModel : Observable() {
         updateState( state.setEvalMode( newMode  ))
 
     fun makeBinOp(op: BinaryOperator) = updateState( state.mkBinOp(op) )
+
     fun makeVarRef(name: String) = updateState( state.mkVarRef( name ))
+
     fun store()  = updateState( state.store({str -> emitError(str)}) )
+
     fun eval()  = updateState( state.eval({str -> emitError(str)}) )
+
     fun clear() = updateState( state.clear() )
+
     fun drop() = updateState( state.drop() )
 
     fun roll() = updateState( state.roll() )

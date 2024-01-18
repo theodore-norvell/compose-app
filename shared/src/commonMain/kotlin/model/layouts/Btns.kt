@@ -52,6 +52,7 @@ class Btns {
         val SUBTRACT =  ButtonDescription( Ops.SUBTRACT )
         val TODO =  ButtonDescription( Ops.TODO, Ops.TODO )
         val POINT =  ButtonDescription( Ops.POINT )
+        val POW = ButtonDescription( Ops.POW )
         val EXP =  ButtonDescription( Ops.EXP )
         val ADD =  ButtonDescription( Ops.ADD )
     }

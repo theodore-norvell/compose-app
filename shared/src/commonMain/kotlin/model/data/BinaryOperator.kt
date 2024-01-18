@@ -16,6 +16,13 @@ enum class BinaryOperator {
 
         override fun toString() = "×"
     },
+
+    POW {
+        override fun precedence() = 60
+
+        override fun toString() = "^"
+    },
+
     SUBTRACT {
         override fun precedence() = 100
 

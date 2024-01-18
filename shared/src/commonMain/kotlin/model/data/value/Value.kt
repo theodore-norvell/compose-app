@@ -14,5 +14,7 @@ sealed class Value {
 
     open fun multiply( other : Value,  prefs : DisplayAndComputePreferences) : Value? = null
 
+    open fun pow( other : Value,  prefs : DisplayAndComputePreferences) : Value? = null
+
     open fun subtract( other : Value,  prefs : DisplayAndComputePreferences) : Value? = null
 }

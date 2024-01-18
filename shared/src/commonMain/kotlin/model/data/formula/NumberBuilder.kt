@@ -4,6 +4,7 @@ import model.data.DisplayAndComputePreferences
 import model.data.Environment
 import model.data.value.ComplexNumberValue
 import model.data.value.FlexNumber
+import model.data.value.NormalFlexNumber
 import model.data.value.NumberRendering
 
 class NumberBuilder private constructor (
@@ -40,7 +41,7 @@ class NumberBuilder private constructor (
     private fun convertBaseTo(base : Int, prefs: DisplayAndComputePreferences ) : NumberBuilder {
         if( base == this.base ) return this
         else {
-            val number =  FlexNumber.create(isNegative, this.base, lengthAfterPoint, digits, exponent*exponentSign)
+            val number =  NormalFlexNumber.create(isNegative, this.base, lengthAfterPoint, digits, exponent*exponentSign)
             val inNewBase = number.convertedToBase( prefs )
             val newDigits = inNewBase.digits
             val newLengthAfterPoint = newDigits.size - inNewBase.exponent
@@ -93,6 +94,13 @@ class NumberBuilder private constructor (
                 copy( numberEntryState = NumberEntryState.EXPONENT )
             NumberEntryState.EXPONENT -> this
         }
+
+    fun appendDigits(digits : List<Byte>) : NumberBuilder {
+        var nb = this
+        for( d in digits ) nb = nb.appendDigit(nb.base, d)
+        return nb
+    }
+
 
     override fun negate() : NumberBuilder {
         return when( numberEntryState ) {
@@ -164,14 +172,14 @@ class NumberBuilder private constructor (
     fun imaginary() : NumberBuilder
         = copy( isImaginary = ! isImaginary)
 
-    fun toFlexNumber() : FlexNumber
-        = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
+    fun toFlexNumber() : NormalFlexNumber
+        = NormalFlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
 
     override fun toFormula(): Formula {
         // This always makes a FlexNumber.  We might want to make other kinds of numbers
         // depending on the mode.
-        val a = FlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
-        val b = FlexNumber.mkZero(base)
+        val a = NormalFlexNumber.create(isNegative, base, lengthAfterPoint, digits, exponent*exponentSign)
+        val b = NormalFlexNumber.mkZero(base)
         val value = if(isImaginary) ComplexNumberValue(b,a) else ComplexNumberValue(a, b)
         return ValueFormula(value)
     }
@@ -181,6 +189,8 @@ class NumberBuilder private constructor (
         env: Environment,
         emitError: (String) -> Unit
     ): TopItem = this
+
+
 
     private fun copy(numberEntryState : NumberEntryState = this.numberEntryState,
                      isNegative: Boolean = this.isNegative,

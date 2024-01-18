@@ -83,6 +83,38 @@ data class ComplexNumberValue  (
         }
     }
 
+    override fun pow( other : Value, prefs: DisplayAndComputePreferences) : Value? {
+        when( other ) {
+            is ComplexNumberValue -> {
+                // (a + bi)^{c+di} = (a^2 + b^2)^(c+di)/3 e^{i(c+di)arg(a+bi)}
+                //      = p^{c/2} e^{-d q} ( cos(r) + i sin(r) )
+                //      = s t ( cos(r) + i sin(r) )
+                // where p = a^2 + b^2
+                //       q = arg(a+bi) = sqrt(p)
+                //       r = cq + d/2 ln(p)
+                //       s = 2^(c/2)
+                //       t = 2^(-d q)
+                val a = this.realPart
+                val b = this.imaginaryPart
+                val c = other.realPart
+                val d = other.imaginaryPart
+                val asq = a.times(a, prefs)
+                val bsq = b.times(b, prefs)
+                val p = asq.plus(bsq, prefs)
+                val q = p.pow( IEEENumber(0.5), prefs )
+                val d_over_2 = d.dividedBy( NormalFlexNumber.mkNum(2, prefs.base), prefs)
+                val r = c.times(q, prefs).plus(d_over_2.times(p.ln(prefs), prefs), prefs)
+                val c_over_2 = c.dividedBy(NormalFlexNumber.mkNum(2, prefs.base), prefs )
+                val s = p.pow(c_over_2, prefs)
+                val t = IEEENumber.e.pow( d.times(q, prefs).negated(), prefs )
+                val u = s.times(t, prefs)
+                val v = u.times( r.cos(prefs), prefs )
+                val w = u.times( r.sin(prefs), prefs )
+                return ComplexNumberValue( v, w )
+            }
+        }
+    }
+
     override fun subtract( other : Value,  prefs : DisplayAndComputePreferences) : Value? =
         when ( val negative = other.negate() ) {
             null -> null
